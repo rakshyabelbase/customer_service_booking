@@ -4,6 +4,7 @@ import { useServiceBookings, useDeleteBookingMutation } from '../../features/boo
 import {
   Calendar,
   Clock,
+  MapPin,
   User,
   Mail,
   AlertCircle,
@@ -230,6 +231,7 @@ export function BookingList({
                   <Clock size={14} className="text-secondary ml-3 mr-1" />
                   <span>{booking.startTime} - {booking.endTime}</span>
                 </div>
+                <div className="booking-meta-row flex-align mt-2 text-sm text-muted"><MapPin size={14} className="mr-2" /><span>{booking.serviceAddress}</span></div>
 
                 {booking.notes && (
                   <p className="booking-notes-preview mt-2 text-xs text-muted line-clamp-1">
