@@ -5,6 +5,8 @@ import type {
   ServiceQueryParams,
   Booking,
   CreateBookingDto,
+  UpdateBookingDto,
+  BookingQueryParams,
   ServiceAvailability,
   ApiResponse,
   ApiListResponse,
@@ -348,6 +350,7 @@ export const mockCreateBooking = async (
       price: service.price,
       currency: service.currency,
       status: 'confirmed',
+      notes: dto.notes?.trim(),
       createdAt: new Date().toISOString(),
     };
 
@@ -365,9 +368,20 @@ export const mockCreateBooking = async (
 };
 
 // 8. GET /api/v1/bookings
-export const mockGetBookings = async (): Promise<ApiListResponse<Booking>> => {
+export const mockGetBookings = async (
+  params?: BookingQueryParams
+): Promise<ApiListResponse<Booking>> => {
   return executeRequest(async () => {
-    const bookings = getStoredBookings();
+    let bookings = getStoredBookings();
+
+    if (params?.serviceId) {
+      bookings = bookings.filter((b) => b.serviceId === params.serviceId);
+    }
+
+    if (params?.status) {
+      bookings = bookings.filter((b) => b.status === params.status);
+    }
+
     return {
       data: bookings,
       meta: { total: bookings.length },
@@ -389,5 +403,140 @@ export const mockGetBookingById = async (bookingId: string): Promise<ApiResponse
     }
 
     return { data: booking };
+  });
+};
+
+// 10. PATCH /api/v1/bookings/{booking_id}
+export const mockUpdateBooking = async (
+  bookingId: string,
+  dto: UpdateBookingDto
+): Promise<ApiResponse<Booking>> => {
+  return executeRequest(async () => {
+    const bookings = getStoredBookings();
+    const index = bookings.findIndex((b) => b.id === bookingId);
+
+    if (index === -1) {
+      throw new ApiError(404, {
+        code: 'NOT_FOUND',
+        message: `Booking with ID '${bookingId}' not found.`,
+      });
+    }
+
+    const currentBooking = bookings[index];
+    const fieldErrors: FieldErrors = {};
+
+    if (dto.customerName !== undefined && !dto.customerName.trim()) {
+      fieldErrors.customerName = 'Customer name cannot be empty.';
+    }
+    if (dto.customerEmail !== undefined && !dto.customerEmail.trim()) {
+      fieldErrors.customerEmail = 'Customer email cannot be empty.';
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      throw new ApiError(400, {
+        code: 'VALIDATION_ERROR',
+        message: 'Booking update validation failed.',
+        fieldErrors,
+      });
+    }
+
+    const targetDate = dto.scheduledDate || currentBooking.scheduledDate;
+    const targetStartTime = dto.startTime || currentBooking.startTime;
+    const targetStatus = dto.status || currentBooking.status;
+
+    // Slot conflict check if date or start time changes while booking is confirmed
+    if (
+      targetStatus === 'confirmed' &&
+      (targetDate !== currentBooking.scheduledDate || targetStartTime !== currentBooking.startTime)
+    ) {
+      const isConflict = bookings.some(
+        (b) =>
+          b.id !== bookingId &&
+          b.serviceId === currentBooking.serviceId &&
+          b.scheduledDate === targetDate &&
+          b.startTime === targetStartTime &&
+          b.status === 'confirmed'
+      );
+
+      if (isConflict) {
+        throw new ApiError(409, {
+          code: 'SLOT_UNAVAILABLE',
+          message: `The slot ${targetStartTime} on ${targetDate} is no longer available. Please select another slot.`,
+        });
+      }
+    }
+
+    // Calculate updated end time if slot changed
+    const services = getStoredServices();
+    const service = services.find((s) => s.id === currentBooking.serviceId);
+    const duration = service ? service.durationMinutes : 60;
+    const updatedEndTime = calculateEndTime(targetStartTime, duration);
+
+    // Check if status changed to adjust service active bookings count
+    const statusChanged = currentBooking.status !== targetStatus;
+    if (statusChanged && service) {
+      const serviceIndex = services.findIndex((s) => s.id === service.id);
+      if (serviceIndex !== -1) {
+        if (currentBooking.status === 'confirmed' && targetStatus !== 'confirmed') {
+          services[serviceIndex].activeBookingsCount = Math.max(
+            0,
+            (services[serviceIndex].activeBookingsCount || 1) - 1
+          );
+        } else if (currentBooking.status !== 'confirmed' && targetStatus === 'confirmed') {
+          services[serviceIndex].activeBookingsCount =
+            (services[serviceIndex].activeBookingsCount || 0) + 1;
+        }
+        saveStoredServices(services);
+      }
+    }
+
+    const updatedBooking: Booking = {
+      ...currentBooking,
+      customerName: dto.customerName !== undefined ? dto.customerName.trim() : currentBooking.customerName,
+      customerEmail: dto.customerEmail !== undefined ? dto.customerEmail.trim() : currentBooking.customerEmail,
+      customerPhone: dto.customerPhone !== undefined ? dto.customerPhone.trim() : currentBooking.customerPhone,
+      scheduledDate: targetDate,
+      startTime: targetStartTime,
+      endTime: updatedEndTime,
+      status: targetStatus,
+      notes: dto.notes !== undefined ? dto.notes.trim() : currentBooking.notes,
+      updatedAt: new Date().toISOString(),
+    };
+
+    bookings[index] = updatedBooking;
+    saveStoredBookings(bookings);
+
+    return { data: updatedBooking };
+  });
+};
+
+// 11. DELETE /api/v1/bookings/{booking_id}
+export const mockDeleteBooking = async (bookingId: string): Promise<void> => {
+  return executeRequest(async () => {
+    const bookings = getStoredBookings();
+    const booking = bookings.find((b) => b.id === bookingId);
+
+    if (!booking) {
+      throw new ApiError(404, {
+        code: 'NOT_FOUND',
+        message: `Booking with ID '${bookingId}' not found.`,
+      });
+    }
+
+    // Decrement active booking count if confirmed
+    if (booking.status === 'confirmed') {
+      const services = getStoredServices();
+      const serviceIndex = services.findIndex((s) => s.id === booking.serviceId);
+      if (serviceIndex !== -1) {
+        services[serviceIndex].activeBookingsCount = Math.max(
+          0,
+          (services[serviceIndex].activeBookingsCount || 1) - 1
+        );
+        saveStoredServices(services);
+      }
+    }
+
+    const updatedBookings = bookings.filter((b) => b.id !== bookingId);
+    saveStoredBookings(updatedBookings);
   });
 };
