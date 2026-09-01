@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useServicesQuery, useCreateServiceMutation, useUpdateServiceMutation, useDeleteServiceMutation } from '../../features/services/hooks/useServices';
-import type { Service, CreateServiceDto, ServiceQueryParams, ApiError } from '../../types';
+import { ApiError, type Service, type CreateServiceDto, type ServiceQueryParams } from '../../types';
 import { ServiceCard } from './ServiceCard';
 import { ServiceFormModal } from './ServiceFormModal';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
@@ -39,7 +39,7 @@ export function ServiceList() {
   const deleteMutation = useDeleteServiceMutation();
 
   const services = servicesQuery.data?.data || [];
-  const queryError = servicesQuery.error as ApiError | null;
+  const queryError = servicesQuery.error instanceof ApiError ? servicesQuery.error : null;
 
   // Event Handlers for Add/Edit Form
   const handleOpenAddModal = () => {

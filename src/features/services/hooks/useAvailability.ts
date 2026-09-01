@@ -5,9 +5,9 @@ import type { CreateBookingDto, ApiError } from '../../../types';
 import { useToast } from '../../../components/common/ToastContext';
 
 export const availabilityKeys = {
-  all: ['availability'] as const,
+  all: ['availability'],
   byService: (serviceId: string, date?: string) =>
-    [...availabilityKeys.all, serviceId, date] as const,
+    [...availabilityKeys.all, serviceId, date],
 };
 
 export const useAvailabilityQuery = (serviceId: string, date?: string, enabled = true) => {

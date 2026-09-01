@@ -9,11 +9,11 @@ import type {
 import { useToast } from '../../../components/common/ToastContext';
 
 export const serviceKeys = {
-  all: ['services'] as const,
-  lists: () => [...serviceKeys.all, 'list'] as const,
-  list: (params?: ServiceQueryParams) => [...serviceKeys.lists(), params] as const,
-  details: () => [...serviceKeys.all, 'detail'] as const,
-  detail: (id: string) => [...serviceKeys.details(), id] as const,
+  all: ['services'],
+  lists: () => [...serviceKeys.all, 'list'],
+  list: (params?: ServiceQueryParams) => [...serviceKeys.lists(), params],
+  details: () => [...serviceKeys.all, 'detail'],
+  detail: (id: string) => [...serviceKeys.details(), id],
 };
 
 /**
