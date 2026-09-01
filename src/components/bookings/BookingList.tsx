@@ -17,6 +17,8 @@ import {
   XCircle,
   Clock3,
 } from 'lucide-react';
+import { Button } from '../common/Button';
+import { ButtonGroup } from '../common/ButtonGroup';
 
 type BookingListProps = {
   serviceId: string;
@@ -105,14 +107,13 @@ export function BookingList({
           </p>
         </div>
 
-        <button
-          type="button"
-          className="btn-primary flex-align"
+        <Button
+          variant="primary"
+          leftIcon={<Plus size={16} />}
           onClick={() => onOpenBookingModal(service || undefined)}
         >
-          <Plus size={16} className="mr-1" />
-          <span>New Booking</span>
-        </button>
+          New Booking
+        </Button>
       </div>
 
       {/* Filter and Search Bar */}
@@ -162,14 +163,15 @@ export function BookingList({
           <div>
             <strong>Failed to load bookings:</strong> {bookingsQuery.error?.message}
           </div>
-          <button
-            type="button"
-            className="btn-retry-inline ml-auto"
+          <Button
+            size="sm"
+            variant="ghost"
+            className="ml-auto"
+            leftIcon={<RefreshCw size={14} />}
             onClick={() => bookingsQuery.refetch()}
           >
-            <RefreshCw size={14} className="mr-1" />
             Retry
-          </button>
+          </Button>
         </div>
       )}
 
@@ -186,18 +188,17 @@ export function BookingList({
               : 'There are no customer bookings registered for this service yet. Click below to create the first booking.'}
           </p>
           <div className="mt-4">
-            <button
-              type="button"
-              className="btn-secondary"
+            <Button
+              variant="secondary"
+              leftIcon={<Plus size={16} />}
               onClick={() => {
                 setSearchQuery('');
                 setStatusFilter('all');
                 onOpenBookingModal(service || undefined);
               }}
             >
-              <Plus size={16} className="mr-1" />
               Book Now
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -306,22 +307,22 @@ export function BookingList({
               </p>
             </div>
             <div className="modal-footer">
-              <button
-                type="button"
-                className="btn-cancel"
-                onClick={() => setBookingToDelete(null)}
-                disabled={deleteMutation.isPending}
-              >
-                Keep Booking
-              </button>
-              <button
-                type="button"
-                className="btn-delete-confirm"
-                onClick={handleConfirmCancel}
-                disabled={deleteMutation.isPending}
-              >
-                {deleteMutation.isPending ? 'Cancelling...' : 'Yes, Cancel Booking'}
-              </button>
+              <ButtonGroup align="right">
+                <Button
+                  variant="secondary"
+                  onClick={() => setBookingToDelete(null)}
+                  disabled={deleteMutation.isPending}
+                >
+                  Keep Booking
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={handleConfirmCancel}
+                  isLoading={deleteMutation.isPending}
+                >
+                  Yes, Cancel Booking
+                </Button>
+              </ButtonGroup>
             </div>
           </div>
         </div>
