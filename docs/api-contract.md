@@ -57,8 +57,10 @@ This document defines the RESTful API contract for the Customer Service Booking 
 | `DELETE` | `/api/v1/services/{service_id}` | Delete service |
 | `GET` | `/api/v1/services/{service_id}/availability` | Query available booking time slots |
 | `POST` | `/api/v1/bookings` | Create new booking |
-| `GET` | `/api/v1/bookings` | List customer bookings |
+| `GET` | `/api/v1/bookings` | List customer bookings (supports `serviceId` query filter) |
 | `GET` | `/api/v1/bookings/{booking_id}` | Retrieve booking details |
+| `PATCH` | `/api/v1/bookings/{booking_id}` | Update/reschedule existing booking |
+| `DELETE` | `/api/v1/bookings/{booking_id}` | Cancel/delete existing booking |
 
 ---
 
@@ -478,6 +480,14 @@ Status: `201 Created`
 ### HTTP Method & Path
 `GET /api/v1/bookings`
 
+### Purpose
+Retrieve bookings, optionally filtered by `serviceId` or `status`.
+
+### Request Parameters
+- **Query Parameters:**
+  - `serviceId` (string, optional): Filter bookings belonging to a specific service.
+  - `status` (string, optional): Filter by status (`confirmed`, `cancelled`, `completed`).
+
 ### Response Body
 Status: `200 OK`
 ```json
@@ -488,15 +498,30 @@ Status: `200 OK`
       "bookingNumber": "CSB-2026-0101",
       "serviceId": "service-001",
       "serviceName": "Home Deep Cleaning",
-      "customerName": "Ramesh Adhikari",
-      "scheduledDate": "2026-09-01",
+      "customerName": "Aarav Sharma",
+      "customerEmail": "aarav@example.com",
+      "customerPhone": "9841000001",
+      "scheduledDate": "2026-09-02",
       "startTime": "09:00",
-      "status": "confirmed"
+      "endTime": "11:00",
+      "price": 2500,
+      "currency": "NPR",
+      "status": "confirmed",
+      "createdAt": "2026-08-30T10:00:00Z"
     }
   ],
   "meta": { "total": 1 }
 }
 ```
+
+### HTTP Status Codes
+- `200 OK`: Request succeeded.
+- `500 Internal Server Error`: Unexpected server error.
+
+### UI Behavior
+- **Loading:** Display skeleton list items.
+- **Empty:** Display friendly empty notice ("No bookings yet for this service") with access to the Book button.
+- **Error:** Render error notification banner with retry capability.
 
 ---
 
@@ -504,6 +529,13 @@ Status: `200 OK`
 
 ### HTTP Method & Path
 `GET /api/v1/bookings/{booking_id}`
+
+### Purpose
+Retrieve full details for a specific booking by ID.
+
+### Request Parameters
+- **Path Parameters:**
+  - `booking_id` (string, required): Unique booking ID.
 
 ### Response Body
 Status: `200 OK`
@@ -514,11 +546,115 @@ Status: `200 OK`
     "bookingNumber": "CSB-2026-0101",
     "serviceId": "service-001",
     "serviceName": "Home Deep Cleaning",
-    "customerName": "Ramesh Adhikari",
-    "scheduledDate": "2026-09-01",
+    "customerName": "Aarav Sharma",
+    "customerEmail": "aarav@example.com",
+    "customerPhone": "9841000001",
+    "scheduledDate": "2026-09-02",
     "startTime": "09:00",
     "endTime": "11:00",
-    "status": "confirmed"
+    "price": 2500,
+    "currency": "NPR",
+    "status": "confirmed",
+    "notes": "Special instructions: Clean balcony windows.",
+    "createdAt": "2026-08-30T10:00:00Z"
   }
 }
 ```
+
+### HTTP Status Codes
+- `200 OK`: Booking found.
+- `404 Not Found`: Booking ID not found.
+- `500 Internal Server Error`: Server error.
+
+### UI Behavior
+- **Loading:** Display loading indicator inside the modal/drawer.
+- **Error:** Display error state banner with a retry action.
+
+---
+
+## 10. Update / Reschedule Booking
+
+### HTTP Method & Path
+`PATCH /api/v1/bookings/{booking_id}`
+
+### Purpose
+Update customer details, scheduled date, time slot, status, or notes of an existing booking.
+
+### Request Parameters
+- **Path Parameters:**
+  - `booking_id` (string, required): Unique booking ID.
+
+### Request Body
+```json
+{
+  "customerName": "Aarav Sharma",
+  "customerEmail": "aarav@example.com",
+  "customerPhone": "9841000001",
+  "scheduledDate": "2026-09-04",
+  "startTime": "10:30",
+  "notes": "Rescheduled due to travel."
+}
+```
+
+### Response Body
+Status: `200 OK`
+```json
+{
+  "data": {
+    "id": "booking-101",
+    "bookingNumber": "CSB-2026-0101",
+    "serviceId": "service-001",
+    "serviceName": "Home Deep Cleaning",
+    "customerName": "Aarav Sharma",
+    "customerEmail": "aarav@example.com",
+    "customerPhone": "9841000001",
+    "scheduledDate": "2026-09-04",
+    "startTime": "10:30",
+    "endTime": "12:30",
+    "price": 2500,
+    "currency": "NPR",
+    "status": "confirmed",
+    "notes": "Rescheduled due to travel.",
+    "createdAt": "2026-08-30T10:00:00Z",
+    "updatedAt": "2026-09-01T14:30:00Z"
+  }
+}
+```
+
+### HTTP Status Codes
+- `200 OK`: Booking updated successfully.
+- `400 Bad Request`: Validation failure.
+- `404 Not Found`: Booking not found.
+- `409 Conflict`: New time slot is unavailable.
+- `500 Internal Server Error`: Server error.
+
+### UI Behavior
+- **Loading:** Disable modal form buttons and show spinner.
+- **Validation / Conflict Errors (400 / 409):** Keep modal open with user input intact and display inline error banner.
+- **Success:** Close modal, show success toast, invalidate queries (`['bookings']`, `['availability']`).
+
+---
+
+## 11. Cancel / Delete Booking
+
+### HTTP Method & Path
+`DELETE /api/v1/bookings/{booking_id}`
+
+### Purpose
+Cancel or permanently remove a booking.
+
+### Request Parameters
+- **Path Parameters:**
+  - `booking_id` (string, required): Unique booking ID.
+
+### Response Body
+Status: `204 No Content` (empty body).
+
+### HTTP Status Codes
+- `204 No Content`: Booking deleted.
+- `404 Not Found`: Booking not found.
+- `500 Internal Server Error`: Unexpected server error.
+
+### UI Behavior
+- **Loading:** Show spinner on confirmation dialog action button.
+- **Success:** Close dialog, present success toast, and invalidate `['bookings']`, `['availability']`, and `['services']` queries to restore slot availability and active booking count.
