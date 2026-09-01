@@ -161,7 +161,13 @@ export function ServiceList() {
                 <div className="skeleton-title pulse-anim" />
                 <div className="skeleton-text pulse-anim" />
                 <div className="skeleton-text short pulse-anim" />
-                <div className="skeleton-footer pulse-anim" />
+                <div className="skeleton-meta-row pulse-anim" />
+                <div className="skeleton-divider" />
+                <div className="skeleton-price-row">
+                  <div className="skeleton-price pulse-anim" />
+                  <div className="skeleton-icons-group pulse-anim" />
+                </div>
+                <div className="skeleton-primary-btn pulse-anim" />
               </div>
             </div>
           ))}
@@ -238,6 +244,7 @@ export function ServiceList() {
               onEdit={handleOpenEditModal}
               onDelete={handleOpenDeleteModal}
               onCheckAvailability={handleOpenAvailabilityModal}
+              isDeleting={deletingService?.id === service.id && deleteMutation.isPending}
             />
           ))}
         </div>

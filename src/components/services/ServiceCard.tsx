@@ -1,12 +1,16 @@
 import type { Service } from '../../types';
-import { Clock, Star, Edit3, Trash2, Calendar, Tag, Building2, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Clock, Star, Edit3, Calendar, Tag, Building2, ArrowRight, Loader2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { CardActionsMenu } from '../common/CardActionsMenu';
 
-type ServiceCardProps = {
+export type ServiceCardProps = {
   service: Service;
-  onEdit: (service: Service) => void;
-  onDelete: (service: Service) => void;
-  onCheckAvailability: (service: Service) => void;
+  onEdit?: (service: Service) => void;
+  onDelete?: (service: Service) => void;
+  onCheckAvailability?: (service: Service) => void;
+  onViewDetails?: (service: Service) => void;
+  showManagementActions?: boolean;
+  isDeleting?: boolean;
 };
 
 export function ServiceCard({
@@ -14,9 +18,52 @@ export function ServiceCard({
   onEdit,
   onDelete,
   onCheckAvailability,
+  onViewDetails,
+  showManagementActions = true,
+  isDeleting = false,
 }: ServiceCardProps) {
+  const navigate = useNavigate();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // If user clicked inside an action button or link, let it handle its own behavior
+    if (
+      e.target instanceof Element &&
+      (e.target.closest('button') || e.target.closest('a'))
+    ) {
+      return;
+    }
+    if (onViewDetails) {
+      onViewDetails(service);
+    } else {
+      navigate(`/services/${service.id}`);
+    }
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onEdit?.(service);
+  };
+
+  const handleSlotsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onCheckAvailability?.(service);
+  };
+
   return (
-    <article className="service-card">
+    <article
+      className={`service-card ${isDeleting ? 'service-card-deleting' : ''}`}
+      onClick={handleCardClick}
+    >
+      {isDeleting && (
+        <div className="service-card-deleting-overlay">
+          <Loader2 size={24} className="spinner-anim" />
+          <span>Deleting service...</span>
+        </div>
+      )}
+
+      {/* Clickable Image Media Section */}
       <Link to={`/services/${service.id}`} className="service-card-media-link">
         <div className="service-card-media">
           <img
@@ -36,10 +83,12 @@ export function ServiceCard({
         </div>
       </Link>
 
+      {/* Main Content Area */}
       <div className="service-card-body">
         <Link to={`/services/${service.id}`} className="service-card-title-link">
           <h3 className="service-card-title">{service.name}</h3>
         </Link>
+
         <p className="service-card-desc">{service.description}</p>
 
         <div className="service-meta-grid">
@@ -56,54 +105,69 @@ export function ServiceCard({
 
         <div className="service-card-divider" />
 
+        {/* Card Footer with Price + Actions */}
         <div className="service-card-footer">
-          <div className="service-price-block">
-            <span className="price-label">Price</span>
-            <span className="price-value">
-              {service.currency} {service.price.toLocaleString()}
-            </span>
+          <div className="service-price-row">
+            <div className="service-price-block">
+              <span className="price-label">Price</span>
+              <span className="price-value">
+                {service.currency} {service.price.toLocaleString()}
+              </span>
+            </div>
+
+            {/* Secondary Admin Actions (Edit icon, Slots icon, Overflow Menu) */}
+            {showManagementActions && (onEdit || onDelete || onCheckAvailability) && (
+              <div className="service-card-secondary-actions">
+                {onEdit && (
+                  <button
+                    type="button"
+                    className="btn-icon-action btn-icon-edit"
+                    onClick={handleEditClick}
+                    aria-label="Edit service"
+                    title="Edit service details"
+                  >
+                    <Edit3 size={15} />
+                  </button>
+                )}
+
+                {onCheckAvailability && (
+                  <button
+                    type="button"
+                    className="btn-icon-action btn-icon-slots"
+                    onClick={handleSlotsClick}
+                    aria-label="Manage slot availability"
+                    title="Manage slots"
+                  >
+                    <Calendar size={15} />
+                  </button>
+                )}
+
+                {onEdit && onDelete && onCheckAvailability && (
+                  <CardActionsMenu
+                    service={service}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onCheckAvailability={onCheckAvailability}
+                  />
+                )}
+              </div>
+            )}
           </div>
 
-          <div className="service-card-actions">
-            <Link
-              to={`/services/${service.id}`}
-              className="btn-action btn-action-view"
-              title="View full service details & bookings"
-            >
-              <ExternalLink size={15} />
-              <span>Details</span>
-            </Link>
-
-            <button
-              type="button"
-              className="btn-action btn-action-edit"
-              onClick={() => onEdit(service)}
-              title="Edit service details"
-            >
-              <Edit3 size={15} />
-              <span>Edit</span>
-            </button>
-
-            <button
-              type="button"
-              className="btn-action btn-action-delete"
-              onClick={() => onDelete(service)}
-              title="Delete service"
-            >
-              <Trash2 size={15} />
-              <span>Delete</span>
-            </button>
-
-            <button
-              type="button"
-              className="btn-action btn-action-slots"
-              onClick={() => onCheckAvailability(service)}
-              title="Quick slot availability"
-            >
-              <Calendar size={15} />
-              <span>Slots</span>
-            </button>
-          </div>
+          {/* Primary Action Button (Full-width) */}
+          <Link
+            to={`/services/${service.id}`}
+            className="btn-card-primary"
+            onClick={(e) => {
+              if (onViewDetails) {
+                e.preventDefault();
+                onViewDetails(service);
+              }
+            }}
+          >
+            <span>View Details</span>
+            <ArrowRight size={16} />
+          </Link>
         </div>
       </div>
     </article>
