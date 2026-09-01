@@ -4,6 +4,7 @@ import { useAvailabilityQuery, useCreateBookingMutation } from '../../features/s
 import { Calendar, Clock, CheckCircle2, AlertCircle, Loader2, X, User, Lock, Check } from 'lucide-react';
 import { Button } from '../common/Button';
 import { ButtonGroup } from '../common/ButtonGroup';
+import { getLocalDateString } from '../../utils/date';
 
 type AvailabilityModalProps = {
   isOpen: boolean;
@@ -17,12 +18,13 @@ export function AvailabilityModal({
   onClose,
 }: AvailabilityModalProps) {
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
+    getLocalDateString()
   );
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState('Anish Adhikari');
   const [customerEmail, setCustomerEmail] = useState('anish@example.com');
   const [customerPhone, setCustomerPhone] = useState('9841999888');
+  const [serviceAddress, setServiceAddress] = useState('Lazimpat Road, Kathmandu 44600');
 
   const availabilityQuery = useAvailabilityQuery(
     service?.id || '',
@@ -46,6 +48,7 @@ export function AvailabilityModal({
       customerName,
       customerEmail,
       customerPhone,
+      serviceAddress,
       scheduledDate: selectedDate,
       startTime: selectedSlot,
     };
@@ -97,7 +100,7 @@ export function AvailabilityModal({
               id="bookingDate"
               className="date-picker-input"
               value={selectedDate}
-              min={new Date().toISOString().split('T')[0]}
+              min={getLocalDateString()}
               onChange={(e) => {
                 setSelectedDate(e.target.value);
                 setSelectedSlot(null);
@@ -212,6 +215,7 @@ export function AvailabilityModal({
                   />
                 </div>
               </div>
+              <div className="form-group mt-2"><label className="form-label">Service Address *</label><input type="text" required minLength={8} className="form-input" value={serviceAddress} onChange={(e) => setServiceAddress(e.target.value)} /></div>
 
               <ButtonGroup align="right" className="mt-3">
                 <Button
