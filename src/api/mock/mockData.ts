@@ -99,9 +99,11 @@ const INITIAL_BOOKINGS: Booking[] = [
     bookingNumber: 'CSB-2026-0101',
     serviceId: 'service-001',
     serviceName: 'Home Deep Cleaning',
+    provider: { id: 'prov-01', name: 'CleanCare Services' },
     customerName: 'Aarav Sharma',
     customerEmail: 'aarav@example.com',
     customerPhone: '9841000001',
+    serviceAddress: 'Lazimpat Road, Kathmandu 44600',
     scheduledDate: '2026-09-02',
     startTime: '09:00',
     endTime: '11:00',
@@ -115,9 +117,11 @@ const INITIAL_BOOKINGS: Booking[] = [
     bookingNumber: 'CSB-2026-0102',
     serviceId: 'service-001',
     serviceName: 'Home Deep Cleaning',
+    provider: { id: 'prov-01', name: 'CleanCare Services' },
     customerName: 'Sita Gurung',
     customerEmail: 'sita@example.com',
     customerPhone: '9841000002',
+    serviceAddress: 'Lake Side Road, Pokhara 33700',
     scheduledDate: '2026-09-03',
     startTime: '14:00',
     endTime: '16:00',
@@ -131,9 +135,11 @@ const INITIAL_BOOKINGS: Booking[] = [
     bookingNumber: 'CSB-2026-0103',
     serviceId: 'service-003',
     serviceName: 'Plumbing Leak Repair & Unclogging',
+    provider: { id: 'prov-03', name: 'FlowMaster Plumbing' },
     customerName: 'Kiran Thapa',
     customerEmail: 'kiran@example.com',
     customerPhone: '9841000003',
+    serviceAddress: 'Pulchowk, Lalitpur 44700',
     scheduledDate: '2026-09-02',
     startTime: '11:00',
     endTime: '11:45',
@@ -175,7 +181,15 @@ export const getStoredBookings = (): Booking[] => {
       localStorage.setItem(BOOKINGS_KEY, JSON.stringify(INITIAL_BOOKINGS));
       return INITIAL_BOOKINGS;
     }
-    return JSON.parse(raw);
+    const services = getStoredServices();
+    return (JSON.parse(raw) as Booking[]).map((booking) => {
+      const service = services.find((item) => item.id === booking.serviceId);
+      return {
+        ...booking,
+        provider: booking.provider || service?.provider || { id: 'unknown', name: 'Unknown provider' },
+        serviceAddress: booking.serviceAddress || 'Address not recorded',
+      };
+    });
   } catch {
     return INITIAL_BOOKINGS;
   }
