@@ -16,6 +16,8 @@ import {
   Clock3,
   XCircle,
   Tag,
+  MapPin,
+  Building2,
 } from 'lucide-react';
 
 type BookingDetailModalProps = {
@@ -117,11 +119,7 @@ export function BookingDetailModal({
                     {renderStatusBadge(booking.status)}
                   </div>
                   <h3 className="mt-2 text-lg font-bold">{booking.serviceName}</h3>
-                  {service && (
-                    <p className="text-xs text-muted mt-1 flex-align">
-                      <Tag size={12} className="mr-1" /> Category: {service.category} &bull; Provider: {service.provider.name}
-                    </p>
-                  )}
+                  <p className="text-xs text-muted mt-1 flex-align"><Building2 size={12} className="mr-1" /> Provider: {booking.provider.name}{service ? <><Tag size={12} className="ml-2 mr-1" /> Category: {service.category}</> : null}</p>
                 </div>
 
                 <div className="text-right">
@@ -145,6 +143,7 @@ export function BookingDetailModal({
                       <span className="label">Scheduled Date:</span>
                       <span className="value font-semibold">{booking.scheduledDate}</span>
                     </div>
+                    <div className="info-row"><span className="label flex-align"><MapPin size={13} className="mr-1" /> Address:</span><span className="value">{booking.serviceAddress}</span></div>
                     <div className="info-row">
                       <span className="label">Time Slot:</span>
                       <span className="value font-semibold">
