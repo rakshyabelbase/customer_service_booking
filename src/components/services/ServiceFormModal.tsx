@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { Service, CreateServiceDto, FieldErrors, ApiError } from '../../types';
 import { X, Loader2, PlusCircle, Save } from 'lucide-react';
 
-interface ServiceFormModalProps {
+type ServiceFormModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (formData: CreateServiceDto) => Promise<void>;
   initialData?: Service | null;
   isPending: boolean;
   serverError?: ApiError | null;
-}
+};
 
 const CATEGORIES = [
   'Home Cleaning',
@@ -22,14 +22,14 @@ const CATEGORIES = [
   'Pest Control',
 ];
 
-export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
+export function ServiceFormModal({
   isOpen,
   onClose,
   onSubmit,
   initialData,
   isPending,
   serverError,
-}) => {
+}: ServiceFormModalProps) {
   const isEditMode = Boolean(initialData);
 
   const [formData, setFormData] = useState<CreateServiceDto>({
@@ -343,4 +343,4 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
       </div>
     </div>
   );
-};
+}

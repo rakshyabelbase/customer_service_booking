@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useServicesQuery, useCreateServiceMutation, useUpdateServiceMutation, useDeleteServiceMutation } from '../../features/services/hooks/useServices';
 import type { Service, CreateServiceDto, ServiceQueryParams, ApiError } from '../../types';
 import { ServiceCard } from './ServiceCard';
@@ -16,7 +16,7 @@ const CATEGORIES = [
   'Auto Care',
 ];
 
-export const ServiceList: React.FC = () => {
+export function ServiceList() {
   const [params, setParams] = useState<ServiceQueryParams>({
     search: '',
     category: 'All',
@@ -269,4 +269,4 @@ export const ServiceList: React.FC = () => {
       />
     </section>
   );
-};
+}

@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Service, CreateBookingDto } from '../../types';
 import { useAvailabilityQuery, useCreateBookingMutation } from '../../features/services/hooks/useAvailability';
 import { Calendar, Clock, CheckCircle2, AlertCircle, Loader2, X, User } from 'lucide-react';
 
-interface AvailabilityModalProps {
+type AvailabilityModalProps = {
   isOpen: boolean;
   service: Service | null;
   onClose: () => void;
-}
+};
 
-export const AvailabilityModal: React.FC<AvailabilityModalProps> = ({
+export function AvailabilityModal({
   isOpen,
   service,
   onClose,
-}) => {
+}: AvailabilityModalProps) {
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
@@ -222,4 +222,4 @@ export const AvailabilityModal: React.FC<AvailabilityModalProps> = ({
       </div>
     </div>
   );
-};
+}

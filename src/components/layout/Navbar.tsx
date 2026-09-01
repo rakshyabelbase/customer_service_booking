@@ -1,17 +1,16 @@
-import React from 'react';
 import { Wrench, RefreshCw, Sliders, CalendarCheck } from 'lucide-react';
 
-interface NavbarProps {
+type NavbarProps = {
   isFetching?: boolean;
   onToggleDevToolbar: () => void;
   devToolbarOpen: boolean;
-}
+};
 
-export const Navbar: React.FC<NavbarProps> = ({
+export function Navbar({
   isFetching,
   onToggleDevToolbar,
   devToolbarOpen,
-}) => {
+}: NavbarProps) {
   return (
     <header className="app-navbar">
       <div className="navbar-container">
@@ -51,4 +50,4 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
     </header>
   );
-};
+}

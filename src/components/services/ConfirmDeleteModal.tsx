@@ -1,24 +1,23 @@
-import React from 'react';
 import type { Service, ApiError } from '../../types';
 import { AlertTriangle, Trash2, Loader2, X, ShieldAlert } from 'lucide-react';
 
-interface ConfirmDeleteModalProps {
+type ConfirmDeleteModalProps = {
   isOpen: boolean;
   service: Service | null;
   onClose: () => void;
   onConfirm: () => Promise<void>;
   isPending: boolean;
   deleteError?: ApiError | null;
-}
+};
 
-export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
+export function ConfirmDeleteModal({
   isOpen,
   service,
   onClose,
   onConfirm,
   isPending,
   deleteError,
-}) => {
+}: ConfirmDeleteModalProps) {
   if (!isOpen || !service) return null;
 
   const isConflictError = deleteError?.statusCode === 409 || deleteError?.code === 'ACTIVE_BOOKINGS_CONFLICT';
@@ -107,4 +106,4 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
       </div>
     </div>
   );
-};
+}

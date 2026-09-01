@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { getHttpClientConfig, setHttpClientConfig } from '../../api/client/httpClient';
 import { resetMockDatabase } from '../../api/mock/mockData';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from './ToastContext';
 import { AlertTriangle, Clock, RotateCcw, Check, X } from 'lucide-react';
 
-interface DevToolbarProps {
+type DevToolbarProps = {
   isOpen: boolean;
   onClose: () => void;
-}
+};
 
-export const DevToolbar: React.FC<DevToolbarProps> = ({ isOpen, onClose }) => {
+export function DevToolbar({ isOpen, onClose }: DevToolbarProps) {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [config, setConfig] = useState(getHttpClientConfig());
@@ -124,4 +124,4 @@ export const DevToolbar: React.FC<DevToolbarProps> = ({ isOpen, onClose }) => {
       </div>
     </div>
   );
-};
+}

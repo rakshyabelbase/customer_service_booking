@@ -1,20 +1,19 @@
-import React from 'react';
 import type { Service } from '../../types';
 import { Clock, Star, Edit3, Trash2, Calendar, Tag, Building2 } from 'lucide-react';
 
-interface ServiceCardProps {
+type ServiceCardProps = {
   service: Service;
   onEdit: (service: Service) => void;
   onDelete: (service: Service) => void;
   onCheckAvailability: (service: Service) => void;
-}
+};
 
-export const ServiceCard: React.FC<ServiceCardProps> = ({
+export function ServiceCard({
   service,
   onEdit,
   onDelete,
   onCheckAvailability,
-}) => {
+}: ServiceCardProps) {
   return (
     <article className="service-card">
       <div className="service-card-media">
@@ -95,4 +94,4 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
       </div>
     </article>
   );
-};
+}
