@@ -1,0 +1,54 @@
+import React from 'react';
+import { Wrench, RefreshCw, Sliders, CalendarCheck } from 'lucide-react';
+
+interface NavbarProps {
+  isFetching?: boolean;
+  onToggleDevToolbar: () => void;
+  devToolbarOpen: boolean;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({
+  isFetching,
+  onToggleDevToolbar,
+  devToolbarOpen,
+}) => {
+  return (
+    <header className="app-navbar">
+      <div className="navbar-container">
+        <div className="navbar-brand">
+          <div className="brand-icon-wrapper">
+            <Wrench size={22} className="brand-icon" />
+          </div>
+          <div className="brand-text">
+            <span className="brand-title">ServiCraft</span>
+            <span className="brand-subtitle">Service Booking & CRUD System</span>
+          </div>
+        </div>
+
+        <div className="navbar-actions">
+          {isFetching && (
+            <div className="fetching-indicator" title="TanStack Query is fetching in background">
+              <RefreshCw size={14} className="spin-icon" />
+              <span>Syncing data...</span>
+            </div>
+          )}
+
+          <div className="nav-badge">
+            <CalendarCheck size={14} />
+            <span>TanStack Query v5</span>
+          </div>
+
+          <button
+            type="button"
+            className={`btn-dev-toggle ${devToolbarOpen ? 'active' : ''}`}
+            onClick={onToggleDevToolbar}
+            title="Toggle Developer & Network Error Simulation Panel"
+          >
+            <Sliders size={16} />
+            <span>Dev Simulation</span>
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+};
