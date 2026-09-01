@@ -28,6 +28,7 @@ export function Navbar({
         </Link>
 
         <div className="navbar-actions">
+          <Link to="/bookings" className="btn-secondary-sm flex-align"><CalendarCheck size={16} /><span>My Bookings</span></Link>
           {isFetching && (
             <div className="fetching-indicator" title="TanStack Query is fetching in background">
               <RefreshCw size={14} className="spin-icon" />
