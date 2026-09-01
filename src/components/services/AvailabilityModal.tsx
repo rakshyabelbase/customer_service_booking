@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type { Service, CreateBookingDto } from '../../types';
 import { useAvailabilityQuery, useCreateBookingMutation } from '../../features/services/hooks/useAvailability';
-import { Calendar, Clock, CheckCircle2, AlertCircle, Loader2, X, User } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, AlertCircle, Loader2, X, User, Lock, Check } from 'lucide-react';
+import { Button } from '../common/Button';
+import { ButtonGroup } from '../common/ButtonGroup';
 
 type AvailabilityModalProps = {
   isOpen: boolean;
@@ -108,15 +110,11 @@ export function AvailabilityModal({
           <div className="slots-section">
             <h4 className="slots-title">Available Time Slots for {selectedDate}</h4>
             {availabilityQuery.isError ? (
-              <div className="form-alert-error">
-                Failed to load time slots: {availabilityQuery.error?.message}
-                <button
-                  type="button"
-                  className="btn-retry-inline"
-                  onClick={() => availabilityQuery.refetch()}
-                >
+              <div className="form-alert-error flex-between align-center">
+                <span>Failed to load time slots: {availabilityQuery.error?.message}</span>
+                <Button size="sm" variant="ghost" onClick={() => availabilityQuery.refetch()}>
                   Retry
-                </button>
+                </Button>
               </div>
             ) : slots.length === 0 && !isLoadingSlots ? (
               <div className="empty-slots-msg">
@@ -137,12 +135,30 @@ export function AvailabilityModal({
                       } ${isSelected ? 'slot-selected' : ''}`}
                       onClick={() => slot.available && setSelectedSlot(slot.startTime)}
                     >
-                      <Clock size={14} />
                       <span className="slot-time">
+                        <Clock size={14} />
                         {slot.startTime} - {slot.endTime}
                       </span>
-                      <span className="slot-status">
-                        {slot.available ? (isSelected ? 'Selected' : 'Available') : 'Booked'}
+                      <span
+                        className={`slot-status ${
+                          slot.available ? 'slot-status-available' : 'slot-status-booked'
+                        }`}
+                      >
+                        {slot.available ? (
+                          isSelected ? (
+                            <>
+                              <CheckCircle2 size={13} /> Selected
+                            </>
+                          ) : (
+                            <>
+                              <Check size={13} /> Available
+                            </>
+                          )
+                        ) : (
+                          <>
+                            <Lock size={13} /> Booked
+                          </>
+                        )}
                       </span>
                     </button>
                   );
@@ -197,25 +213,16 @@ export function AvailabilityModal({
                 </div>
               </div>
 
-              <div className="booking-submit-row">
-                <button
+              <ButtonGroup align="right" className="mt-3">
+                <Button
                   type="submit"
-                  className="btn-book-now"
-                  disabled={bookingMutation.isPending}
+                  variant="primary"
+                  isLoading={bookingMutation.isPending}
+                  leftIcon={<CheckCircle2 size={16} />}
                 >
-                  {bookingMutation.isPending ? (
-                    <>
-                      <Loader2 size={16} className="spin-icon" />
-                      <span>Creating Booking...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 size={16} />
-                      <span>Confirm Booking ({selectedSlot})</span>
-                    </>
-                  )}
-                </button>
-              </div>
+                  Confirm Booking ({selectedSlot})
+                </Button>
+              </ButtonGroup>
             </form>
           )}
         </div>
