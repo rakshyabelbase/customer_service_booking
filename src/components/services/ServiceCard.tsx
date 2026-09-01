@@ -1,5 +1,6 @@
 import type { Service } from '../../types';
-import { Clock, Star, Edit3, Trash2, Calendar, Tag, Building2 } from 'lucide-react';
+import { Clock, Star, Edit3, Trash2, Calendar, Tag, Building2, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 type ServiceCardProps = {
   service: Service;
@@ -16,25 +17,29 @@ export function ServiceCard({
 }: ServiceCardProps) {
   return (
     <article className="service-card">
-      <div className="service-card-media">
-        <img
-          src={service.imageUrl || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80'}
-          alt={service.name}
-          className="service-card-image"
-          loading="lazy"
-        />
-        <div className="service-badge-category">
-          <Tag size={12} />
-          <span>{service.category}</span>
+      <Link to={`/services/${service.id}`} className="service-card-media-link">
+        <div className="service-card-media">
+          <img
+            src={service.imageUrl || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80'}
+            alt={service.name}
+            className="service-card-image"
+            loading="lazy"
+          />
+          <div className="service-badge-category">
+            <Tag size={12} />
+            <span>{service.category}</span>
+          </div>
+          <div className="service-badge-rating">
+            <Star size={12} className="star-filled" />
+            <span>{service.rating.toFixed(1)}</span>
+          </div>
         </div>
-        <div className="service-badge-rating">
-          <Star size={12} className="star-filled" />
-          <span>{service.rating.toFixed(1)}</span>
-        </div>
-      </div>
+      </Link>
 
       <div className="service-card-body">
-        <h3 className="service-card-title">{service.name}</h3>
+        <Link to={`/services/${service.id}`} className="service-card-title-link">
+          <h3 className="service-card-title">{service.name}</h3>
+        </Link>
         <p className="service-card-desc">{service.description}</p>
 
         <div className="service-meta-grid">
@@ -60,6 +65,15 @@ export function ServiceCard({
           </div>
 
           <div className="service-card-actions">
+            <Link
+              to={`/services/${service.id}`}
+              className="btn-action btn-action-view"
+              title="View full service details & bookings"
+            >
+              <ExternalLink size={15} />
+              <span>Details</span>
+            </Link>
+
             <button
               type="button"
               className="btn-action btn-action-edit"
@@ -84,7 +98,7 @@ export function ServiceCard({
               type="button"
               className="btn-action btn-action-slots"
               onClick={() => onCheckAvailability(service)}
-              title="Check slot availability"
+              title="Quick slot availability"
             >
               <Calendar size={15} />
               <span>Slots</span>
