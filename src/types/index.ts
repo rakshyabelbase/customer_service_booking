@@ -73,7 +73,9 @@ export interface Booking {
   price: number;
   currency: string;
   status: 'confirmed' | 'cancelled' | 'completed';
+  notes?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateBookingDto {
@@ -83,6 +85,24 @@ export interface CreateBookingDto {
   customerPhone?: string;
   scheduledDate: string;
   startTime: string;
+  notes?: string;
+}
+
+export interface UpdateBookingDto {
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  scheduledDate?: string;
+  startTime?: string;
+  status?: 'confirmed' | 'cancelled' | 'completed';
+  notes?: string;
+}
+
+export interface BookingQueryParams {
+  serviceId?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
 }
 
 export type ApiErrorCode =
