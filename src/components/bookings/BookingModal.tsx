@@ -18,7 +18,11 @@ import {
   Phone,
   FileText,
   RefreshCw,
+  Lock,
+  Check,
 } from 'lucide-react';
+import { Button } from '../common/Button';
+import { ButtonGroup } from '../common/ButtonGroup';
 
 type BookingModalProps = {
   isOpen: boolean;
@@ -304,12 +308,28 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
                           } ${isSelected ? 'slot-selected' : ''}`}
                           onClick={() => isAvailable && setSelectedSlot(slot.startTime)}
                         >
-                          <Clock size={13} />
                           <span className="slot-time">
+                            <Clock size={13} />
                             {slot.startTime} - {slot.endTime}
                           </span>
-                          <span className="slot-status">
-                            {isSelected ? 'Selected' : isAvailable ? 'Available' : 'Booked'}
+                          <span
+                            className={`slot-status ${
+                              isAvailable ? 'slot-status-available' : 'slot-status-booked'
+                            }`}
+                          >
+                            {isSelected ? (
+                              <>
+                                <CheckCircle2 size={13} /> Selected
+                              </>
+                            ) : isAvailable ? (
+                              <>
+                                <Check size={13} /> Available
+                              </>
+                            ) : (
+                              <>
+                                <Lock size={13} /> Booked
+                              </>
+                            )}
                           </span>
                         </button>
                       );
@@ -418,33 +438,25 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
             </div>
 
             {/* Form Action Footer */}
-            <div className="modal-actions-bar mt-4">
-              <button
+            <ButtonGroup align="right" className="mt-4 pt-3 border-t border-color">
+              <Button
                 type="button"
-                className="btn-modal-cancel"
+                variant="secondary"
                 onClick={onClose}
                 disabled={activeMutation.isPending}
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                className="btn-modal-primary"
-                disabled={activeMutation.isPending || !selectedSlot}
+                variant="primary"
+                isLoading={activeMutation.isPending}
+                disabled={!selectedSlot}
+                leftIcon={<CheckCircle2 size={16} />}
               >
-                {activeMutation.isPending ? (
-                  <>
-                    <Loader2 size={16} className="spin-icon" />
-                    <span>{isEditMode ? 'Updating...' : 'Confirming...'}</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 size={16} />
-                    <span>{isEditMode ? 'Save Booking Changes' : 'Confirm Booking'}</span>
-                  </>
-                )}
-              </button>
-            </div>
+                {isEditMode ? 'Save Booking Changes' : 'Confirm Booking'}
+              </Button>
+            </ButtonGroup>
           </form>
         </div>
       </div>
