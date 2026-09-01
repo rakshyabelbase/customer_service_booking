@@ -20,6 +20,7 @@ import {
   saveStoredBookings,
 } from './mockData';
 import { executeRequest } from '../client/httpClient';
+import { getLocalDateString, isRealCalendarDate } from '../../utils/date';
 
 // Helper to calculate end time string
 const calculateEndTime = (startTime: string, durationMinutes: number): string => {
@@ -28,6 +29,13 @@ const calculateEndTime = (startTime: string, durationMinutes: number): string =>
   const endHours = Math.floor(totalMins / 60) % 24;
   const endMins = totalMins % 60;
   return `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+};
+
+const PUBLISHED_TIME_SLOTS = ['09:00', '10:30', '12:00', '14:00', '15:30', '17:00'];
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const isValidBookingDate = (date: string): boolean => {
+  return isRealCalendarDate(date) && date >= getLocalDateString();
 };
 
 // 1. GET /api/v1/services
@@ -261,15 +269,14 @@ export const mockGetServiceAvailability = async (
       });
     }
 
-    const selectedDate = date || new Date().toISOString().split('T')[0];
+    const selectedDate = date || getLocalDateString();
     const bookings = getStoredBookings();
     const existingBookings = bookings.filter(
       (b) => b.serviceId === serviceId && b.scheduledDate === selectedDate && b.status === 'confirmed'
     );
     const bookedTimes = new Set(existingBookings.map((b) => b.startTime));
 
-    const defaultTimeSlots = ['09:00', '10:30', '12:00', '14:00', '15:30', '17:00'];
-    const slots = defaultTimeSlots.map((startTime) => {
+    const slots = PUBLISHED_TIME_SLOTS.map((startTime) => {
       const isBooked = bookedTimes.has(startTime);
       return {
         startTime,
@@ -299,8 +306,12 @@ export const mockCreateBooking = async (
     if (!dto.serviceId) fieldErrors.serviceId = 'Service is required.';
     if (!dto.customerName || !dto.customerName.trim()) fieldErrors.customerName = 'Customer name is required.';
     if (!dto.customerEmail || !dto.customerEmail.trim()) fieldErrors.customerEmail = 'Customer email is required.';
+    else if (!EMAIL_PATTERN.test(dto.customerEmail.trim())) fieldErrors.customerEmail = 'Enter a valid email address.';
     if (!dto.scheduledDate) fieldErrors.scheduledDate = 'Date is required.';
+    else if (!isValidBookingDate(dto.scheduledDate)) fieldErrors.scheduledDate = 'Date must be valid and cannot be in the past.';
     if (!dto.startTime) fieldErrors.startTime = 'Time slot is required.';
+    else if (!PUBLISHED_TIME_SLOTS.includes(dto.startTime)) fieldErrors.startTime = 'Select a published availability slot.';
+    if (!dto.serviceAddress || dto.serviceAddress.trim().length < 8) fieldErrors.serviceAddress = 'Enter a complete service address (at least 8 characters).';
 
     if (Object.keys(fieldErrors).length > 0) {
       throw new ApiError(400, {
@@ -341,9 +352,11 @@ export const mockCreateBooking = async (
       bookingNumber: `CSB-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
       serviceId: dto.serviceId,
       serviceName: service.name,
+      provider: service.provider,
       customerName: dto.customerName.trim(),
       customerEmail: dto.customerEmail.trim(),
       customerPhone: dto.customerPhone?.trim(),
+      serviceAddress: dto.serviceAddress.trim(),
       scheduledDate: dto.scheduledDate,
       startTime: dto.startTime,
       endTime: calculateEndTime(dto.startTime, service.durationMinutes),
@@ -430,7 +443,10 @@ export const mockUpdateBooking = async (
     }
     if (dto.customerEmail !== undefined && !dto.customerEmail.trim()) {
       fieldErrors.customerEmail = 'Customer email cannot be empty.';
+    } else if (dto.customerEmail !== undefined && !EMAIL_PATTERN.test(dto.customerEmail.trim())) {
+      fieldErrors.customerEmail = 'Enter a valid email address.';
     }
+    if (dto.serviceAddress !== undefined && dto.serviceAddress.trim().length < 8) fieldErrors.serviceAddress = 'Enter a complete service address (at least 8 characters).';
 
     if (Object.keys(fieldErrors).length > 0) {
       throw new ApiError(400, {
@@ -443,6 +459,12 @@ export const mockUpdateBooking = async (
     const targetDate = dto.scheduledDate || currentBooking.scheduledDate;
     const targetStartTime = dto.startTime || currentBooking.startTime;
     const targetStatus = dto.status || currentBooking.status;
+    if (!isValidBookingDate(targetDate)) fieldErrors.scheduledDate = 'Date must be valid and cannot be in the past.';
+    if (!PUBLISHED_TIME_SLOTS.includes(targetStartTime)) fieldErrors.startTime = 'Select a published availability slot.';
+
+    if (Object.keys(fieldErrors).length > 0) {
+      throw new ApiError(400, { code: 'VALIDATION_ERROR', message: 'Booking update validation failed.', fieldErrors });
+    }
 
     // Slot conflict check if date or start time changes while booking is confirmed
     if (
@@ -495,6 +517,7 @@ export const mockUpdateBooking = async (
       customerName: dto.customerName !== undefined ? dto.customerName.trim() : currentBooking.customerName,
       customerEmail: dto.customerEmail !== undefined ? dto.customerEmail.trim() : currentBooking.customerEmail,
       customerPhone: dto.customerPhone !== undefined ? dto.customerPhone.trim() : currentBooking.customerPhone,
+      serviceAddress: dto.serviceAddress !== undefined ? dto.serviceAddress.trim() : currentBooking.serviceAddress,
       scheduledDate: targetDate,
       startTime: targetStartTime,
       endTime: updatedEndTime,
