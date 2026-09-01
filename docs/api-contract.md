@@ -427,6 +427,7 @@ Book a service time slot for a customer.
   "customerName": "Ramesh Adhikari",
   "customerEmail": "ramesh@example.com",
   "customerPhone": "9841234567",
+  "serviceAddress": "Lazimpat Road, Kathmandu 44600",
   "scheduledDate": "2026-09-01",
   "startTime": "09:00"
 }
@@ -441,8 +442,10 @@ Status: `201 Created`
     "bookingNumber": "CSB-2026-0101",
     "serviceId": "service-001",
     "serviceName": "Home Deep Cleaning",
+    "provider": { "id": "prov-01", "name": "CleanCare Services" },
     "customerName": "Ramesh Adhikari",
     "customerEmail": "ramesh@example.com",
+    "serviceAddress": "Lazimpat Road, Kathmandu 44600",
     "scheduledDate": "2026-09-01",
     "startTime": "09:00",
     "endTime": "11:00",
@@ -457,6 +460,12 @@ Status: `201 Created`
 - `400 Bad Request`: Validation failure.
 - `409 Conflict`: Selected slot has already been booked by another customer.
 - `500 Internal Server Error`: Server error.
+
+### Server-side validation
+- `scheduledDate` must be a real `YYYY-MM-DD` date and cannot be in the past.
+- `startTime` must match one of the service's published availability slots.
+- `customerEmail` must be a valid email address.
+- `serviceAddress` is required and must contain at least 8 characters.
 
 ### Business Error (409 Conflict)
 ```json
@@ -498,9 +507,11 @@ Status: `200 OK`
       "bookingNumber": "CSB-2026-0101",
       "serviceId": "service-001",
       "serviceName": "Home Deep Cleaning",
+      "provider": { "id": "prov-01", "name": "CleanCare Services" },
       "customerName": "Aarav Sharma",
       "customerEmail": "aarav@example.com",
       "customerPhone": "9841000001",
+      "serviceAddress": "Lazimpat Road, Kathmandu 44600",
       "scheduledDate": "2026-09-02",
       "startTime": "09:00",
       "endTime": "11:00",
