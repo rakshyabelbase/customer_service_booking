@@ -1,17 +1,46 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap');
 
 :root {
-  /* Color Palette */
+  /* Core Semantic Color Tokens (Dark Theme - WCAG AA compliant) */
+  --color-bg-base: #0f172a;
+  --color-bg-surface: #1e293b;
+  --color-bg-surface-raised: #334155;
+  --color-bg-muted: rgba(255, 255, 255, 0.05);
+
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-text-disabled: #64748b;
+  --color-text-inverse: #ffffff;
+
+  --color-primary: #6366f1;
+  --color-primary-hover: #4f46e5;
+  --color-primary-light: #a5b4fc;
+  --color-primary-bg: rgba(99, 102, 241, 0.15);
+
+  --color-success: #34d399;
+  --color-success-bg: rgba(16, 185, 129, 0.15);
+  --color-warning: #fbbf24;
+  --color-warning-bg: rgba(245, 158, 11, 0.15);
+  --color-danger: #f87171;
+  --color-danger-bg: rgba(244, 63, 94, 0.15);
+  --color-info: #60a5fa;
+  --color-info-bg: rgba(59, 130, 246, 0.15);
+
+  --color-border-subtle: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+
+  /* Legacy Variable Aliases for Backward Compatibility */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-heading: 'Outfit', sans-serif;
 
-  --bg-app: #0f172a;
-  --bg-surface: #1e293b;
-  --bg-surface-elevated: #334155;
+  --bg-app: var(--color-bg-base);
+  --bg-surface: var(--color-bg-surface);
+  --bg-surface-elevated: var(--color-bg-surface-raised);
   --bg-glass: rgba(30, 41, 59, 0.75);
 
-  --primary-500: #6366f1;
-  --primary-600: #4f46e5;
+  --primary-500: var(--color-primary);
+  --primary-600: var(--color-primary-hover);
   --primary-700: #4338ca;
   --primary-glow: rgba(99, 102, 241, 0.35);
 
@@ -23,11 +52,11 @@
   --rose-600: #e11d48;
   --rose-glow: rgba(244, 63, 94, 0.3);
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
+  --text-main: var(--color-text-primary);
+  --text-muted: var(--color-text-muted);
+  --text-subtle: var(--color-text-disabled);
 
-  --border-light: rgba(255, 255, 255, 0.08);
+  --border-light: var(--color-border-subtle);
   --border-focus: rgba(99, 102, 241, 0.5);
 
   --radius-sm: 8px;
@@ -1284,41 +1313,67 @@ input, select, textarea {
 }
 
 .slot-card {
-  background: var(--bg-app);
-  border: 1px solid var(--border-light);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
-  padding: 0.75rem;
+  padding: 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
   transition: var(--transition-fast);
   text-align: left;
+  position: relative;
+}
+
+.slot-available {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--color-text-primary);
+  cursor: pointer;
 }
 
 .slot-available:hover {
-  border-color: var(--emerald-500);
-  background: rgba(16, 185, 129, 0.08);
+  border-color: var(--color-success);
+  background: rgba(16, 185, 129, 0.16);
+  transform: translateY(-1px);
 }
 
 .slot-selected {
-  border-color: var(--emerald-500) !important;
-  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: var(--color-success) !important;
+  background: rgba(16, 185, 129, 0.22) !important;
   box-shadow: 0 0 12px var(--emerald-glow);
 }
 
 .slot-booked {
-  opacity: 0.4;
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(255, 255, 255, 0.06);
+  opacity: 0.75;
   cursor: not-allowed;
 }
 
 .slot-time {
   font-weight: 700;
   font-size: 0.875rem;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .slot-status {
-  font-size: 0.7rem;
-  color: var(--text-subtle);
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.slot-status-available {
+  color: #34d399;
+}
+
+.slot-status-booked {
+  color: #94a3b8;
 }
 
 .booking-subform {
@@ -1890,3 +1945,152 @@ input, select, textarea {
   border-radius: var(--radius-sm);
 }
 .btn-icon-subtle:hover { color: var(--text-main); }
+
+/* ==========================================================================
+   BUTTON SYSTEM (VARIANTS, SIZES, SPACING & HIERARCHY)
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  text-decoration: none;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast);
+  outline: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
+
+/* SIZES (Minimum 40px touch target for md/lg) */
+.btn-sm {
+  height: 32px;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-md {
+  height: 40px;
+  padding: 0 1.15rem;
+  font-size: 0.875rem;
+  border-radius: var(--radius-md);
+}
+
+.btn-lg {
+  height: 48px;
+  padding: 0 1.5rem;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* VARIANTS */
+/* Primary Action (Filled Brand Indigo, High Contrast Text) */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: var(--color-text-inverse);
+  box-shadow: 0 4px 14px var(--primary-glow);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-primary-hover), #4338ca);
+  box-shadow: 0 6px 18px var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Secondary Action (Subtle Fill + Border, Legible Contrast > 9:1) */
+.btn-secondary {
+  background: var(--color-bg-surface-raised);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+/* Ghost / Tertiary Action (Text-only or Minimal Hover Fill) */
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-color: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-bg-muted);
+  color: var(--color-text-primary);
+}
+
+/* Danger Action (Rose Red Filled or Solid Border) */
+.btn-danger {
+  background: linear-gradient(135deg, #e11d48, #be123c);
+  color: #ffffff;
+  box-shadow: 0 4px 14px var(--rose-glow);
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f43f5e, #e11d48);
+  box-shadow: 0 6px 18px var(--rose-glow);
+  transform: translateY(-1px);
+}
+
+/* DISABLED STATE (Never confused with normal Secondary state) */
+.btn:disabled,
+.btn.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* BUTTON GROUP LAYOUT HELPER */
+.btn-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem; /* 14px gap - satisfying 12-16px rule */
+}
+
+.btn-group-right {
+  justify-content: flex-end;
+}
+
+.btn-group-full {
+  width: 100%;
+}
+
+.btn-group-full > .btn {
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .btn-group-responsive {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .btn-group-responsive > .btn {
+    width: 100%;
+  }
+}
