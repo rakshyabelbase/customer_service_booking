@@ -64,9 +64,11 @@ export interface Booking {
   bookingNumber: string;
   serviceId: string;
   serviceName: string;
+  provider: ServiceProvider;
   customerName: string;
   customerEmail: string;
   customerPhone?: string;
+  serviceAddress: string;
   scheduledDate: string;
   startTime: string;
   endTime: string;
@@ -83,6 +85,7 @@ export interface CreateBookingDto {
   customerName: string;
   customerEmail: string;
   customerPhone?: string;
+  serviceAddress: string;
   scheduledDate: string;
   startTime: string;
   notes?: string;
@@ -92,6 +95,7 @@ export interface UpdateBookingDto {
   customerName?: string;
   customerEmail?: string;
   customerPhone?: string;
+  serviceAddress?: string;
   scheduledDate?: string;
   startTime?: string;
   status?: 'confirmed' | 'cancelled' | 'completed';
