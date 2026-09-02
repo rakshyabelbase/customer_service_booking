@@ -1,9 +1,9 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { useBookingQuery } from '../../features/bookings/hooks/useBookings';
-import { Button } from '../common/Button';
-import { ButtonGroup } from '../common/ButtonGroup';
-import { BookingConfirmationView } from './BookingConfirmationView';
+import { useBookingQuery } from '../hooks/useBookings';
+import { Button } from '../../../components/common/Button';
+import { ButtonGroup } from '../../../components/common/ButtonGroup';
+import { BookingConfirmationView } from '../components/BookingConfirmationView';
 
 export function BookingConfirmationPage() {
   const { bookingId = '' } = useParams<{ bookingId: string }>();

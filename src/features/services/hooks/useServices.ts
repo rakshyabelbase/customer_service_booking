@@ -6,7 +6,7 @@ import type {
   UpdateServiceDto,
   ApiError,
 } from '../../../types';
-import { useToast } from '../../../components/common/ToastContext';
+import { useToast } from '../../../components/common/useToast';
 
 export const serviceKeys = {
   all: ['services'],

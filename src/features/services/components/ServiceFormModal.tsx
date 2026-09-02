@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import type { Service, CreateServiceDto, FieldErrors, ApiError } from '../../types';
+import { useState } from 'react';
+import type { Service, CreateServiceDto, FieldErrors, ApiError } from '../../../types';
 import { X, Loader2, PlusCircle, Save } from 'lucide-react';
 
 type ServiceFormModalProps = {
@@ -22,6 +22,32 @@ const CATEGORIES = [
   'Pest Control',
 ];
 
+function getInitialFormData(initialData?: Service | null): CreateServiceDto {
+  if (initialData) {
+    return {
+      name: initialData.name,
+      description: initialData.description,
+      category: initialData.category,
+      providerName: initialData.provider.name,
+      price: initialData.price,
+      currency: initialData.currency || 'NPR',
+      durationMinutes: initialData.durationMinutes,
+      imageUrl: initialData.imageUrl || '',
+    };
+  }
+
+  return {
+    name: '',
+    description: '',
+    category: 'Home Cleaning',
+    providerName: '',
+    price: 1500,
+    currency: 'NPR',
+    durationMinutes: 60,
+    imageUrl: '',
+  };
+}
+
 export function ServiceFormModal({
   isOpen,
   onClose,
@@ -32,46 +58,11 @@ export function ServiceFormModal({
 }: ServiceFormModalProps) {
   const isEditMode = Boolean(initialData);
 
-  const [formData, setFormData] = useState<CreateServiceDto>({
-    name: '',
-    description: '',
-    category: 'Home Cleaning',
-    providerName: '',
-    price: 1500,
-    currency: 'NPR',
-    durationMinutes: 60,
-    imageUrl: '',
-  });
+  const [formData, setFormData] = useState<CreateServiceDto>(() =>
+    getInitialFormData(initialData)
+  );
 
   const [clientErrors, setClientErrors] = useState<FieldErrors>({});
-
-  // Reset or populate form when modal opens or initialData changes
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        name: initialData.name,
-        description: initialData.description,
-        category: initialData.category,
-        providerName: initialData.provider.name,
-        price: initialData.price,
-        currency: initialData.currency || 'NPR',
-        durationMinutes: initialData.durationMinutes,
-        imageUrl: initialData.imageUrl || '',
-      });
-    } else {
-      setFormData({
-        name: '',
-        description: '',
-        category: 'Home Cleaning',
-        providerName: '',
-        price: 1500,
-        currency: 'NPR',
-        durationMinutes: 60,
-        imageUrl: '',
-      });
-    }
-    setClientErrors({});
-  }, [initialData, isOpen]);
 
   // Combine client-side errors and server-returned field errors
   const activeErrors: FieldErrors = {

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import type { Booking } from '../../types';
+import type { Booking } from '../../../types';
 import {
   useServiceQuery,
   useUpdateServiceMutation,
   useDeleteServiceMutation,
-} from '../../features/services/hooks/useServices';
+} from '../hooks/useServices';
 import {
   ArrowLeft,
   Calendar,
@@ -20,13 +20,13 @@ import {
   Users,
   CheckCircle2,
 } from 'lucide-react';
-import { BookingList } from '../bookings/BookingList';
-import { BookingModal } from '../bookings/BookingModal';
-import { BookingDetailModal } from '../bookings/BookingDetailModal';
-import { ServiceFormModal } from './ServiceFormModal';
-import { ConfirmDeleteModal } from './ConfirmDeleteModal';
-import { ApiError } from '../../types';
-import { TodayAvailabilityPill } from './TodayAvailabilityPill';
+import { BookingList } from '../../bookings/components/BookingList';
+import { BookingModal } from '../../bookings/components/BookingModal';
+import { BookingDetailModal } from '../../bookings/components/BookingDetailModal';
+import { ServiceFormModal } from '../components/ServiceFormModal';
+import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal';
+import { ApiError } from '../../../types';
+import { TodayAvailabilityPill } from '../components/TodayAvailabilityPill';
 
 export function ServiceDetailPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
@@ -262,15 +262,17 @@ export function ServiceDetailPage() {
       </div>
 
       {/* Booking Create/Edit Modal */}
-      <BookingModal
-        isOpen={isBookingModalOpen}
-        service={service}
-        booking={editingBooking}
-        onClose={() => {
-          setIsBookingModalOpen(false);
-          setEditingBooking(null);
-        }}
-      />
+      {isBookingModalOpen && (
+        <BookingModal
+          isOpen
+          service={service}
+          booking={editingBooking}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setEditingBooking(null);
+          }}
+        />
+      )}
 
       {/* Booking Detail View Modal */}
       <BookingDetailModal

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { Booking, Service } from '../../types';
-import { useServiceBookings, useDeleteBookingMutation } from '../../features/bookings/hooks/useBookings';
+import type { Booking, Service } from '../../../types';
+import { useServiceBookings, useDeleteBookingMutation } from '../hooks/useBookings';
 import {
   Calendar,
   Clock,
@@ -18,8 +18,8 @@ import {
   XCircle,
   Clock3,
 } from 'lucide-react';
-import { Button } from '../common/Button';
-import { ButtonGroup } from '../common/ButtonGroup';
+import { Button } from '../../../components/common/Button';
+import { ButtonGroup } from '../../../components/common/ButtonGroup';
 
 type BookingListProps = {
   serviceId: string;

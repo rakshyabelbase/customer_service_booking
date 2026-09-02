@@ -1,4 +1,4 @@
-import type { Service, ApiError } from '../../types';
+import type { Service, ApiError } from '../../../types';
 import { AlertTriangle, Trash2, Loader2, X, ShieldAlert } from 'lucide-react';
 
 type ConfirmDeleteModalProps = {

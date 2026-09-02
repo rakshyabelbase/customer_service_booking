@@ -1,6 +1,6 @@
 import { AlertTriangle, Circle } from 'lucide-react';
-import { useAvailabilityQuery } from '../../features/services/hooks/useAvailability';
-import { getLocalDateString } from '../../utils/date';
+import { useAvailabilityQuery } from '../hooks/useAvailability';
+import { getLocalDateString } from '../../../utils/date';
 
 type TodayAvailabilityPillProps = {
   serviceId: string;

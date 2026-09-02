@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { getHttpClientConfig, setHttpClientConfig } from '../../api/client/httpClient';
 import { resetMockDatabase } from '../../api/mock/mockData';
 import { useQueryClient } from '@tanstack/react-query';
-import { useToast } from './ToastContext';
+import { useToast } from './useToast';
 import { AlertTriangle, Clock, RotateCcw, Check, X } from 'lucide-react';
 
 type DevToolbarProps = {

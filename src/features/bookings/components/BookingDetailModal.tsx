@@ -1,5 +1,5 @@
-import type { Booking, Service } from '../../types';
-import { useBookingQuery } from '../../features/bookings/hooks/useBookings';
+import type { Booking, Service } from '../../../types';
+import { useBookingQuery } from '../hooks/useBookings';
 import {
   X,
   Calendar,
@@ -19,8 +19,8 @@ import {
   MapPin,
   Building2,
 } from 'lucide-react';
-import { Button } from '../common/Button';
-import { ButtonGroup } from '../common/ButtonGroup';
+import { Button } from '../../../components/common/Button';
+import { ButtonGroup } from '../../../components/common/ButtonGroup';
 
 type BookingDetailModalProps = {
   bookingId: string | null;

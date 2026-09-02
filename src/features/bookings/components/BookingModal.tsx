@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Service, Booking, CreateBookingDto, UpdateBookingDto } from '../../types';
-import { ApiError } from '../../types';
-import { useAvailabilityQuery } from '../../features/services/hooks/useAvailability';
+import type { Service, Booking, CreateBookingDto, UpdateBookingDto } from '../../../types';
+import { ApiError } from '../../../types';
+import { useAvailabilityQuery } from '../../services/hooks/useAvailability';
 import {
   useCreateBookingMutation,
   useUpdateBookingMutation,
-} from '../../features/bookings/hooks/useBookings';
+} from '../hooks/useBookings';
 import {
   Calendar,
   Clock,
@@ -24,9 +24,9 @@ import {
   MapPin,
   Building2,
 } from 'lucide-react';
-import { Button } from '../common/Button';
-import { ButtonGroup } from '../common/ButtonGroup';
-import { getLocalDateString } from '../../utils/date';
+import { Button } from '../../../components/common/Button';
+import { ButtonGroup } from '../../../components/common/ButtonGroup';
+import { getLocalDateString } from '../../../utils/date';
 import { BookingConfirmationView } from './BookingConfirmationView';
 
 type BookingModalProps = {
@@ -40,16 +40,14 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
   const navigate = useNavigate();
   const isEditMode = Boolean(booking);
 
-  const [selectedDate, setSelectedDate] = useState<string>(
-    getLocalDateString()
-  );
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [customerName, setCustomerName] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [serviceAddress, setServiceAddress] = useState('');
-  const [notes, setNotes] = useState('');
-  const [status, setStatus] = useState<'confirmed' | 'cancelled' | 'completed'>('confirmed');
+  const [selectedDate, setSelectedDate] = useState(booking?.scheduledDate ?? getLocalDateString());
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(booking?.startTime ?? null);
+  const [customerName, setCustomerName] = useState(booking?.customerName ?? 'Aarav Sharma');
+  const [customerEmail, setCustomerEmail] = useState(booking?.customerEmail ?? 'aarav@example.com');
+  const [customerPhone, setCustomerPhone] = useState(booking?.customerPhone ?? '');
+  const [serviceAddress, setServiceAddress] = useState(booking?.serviceAddress ?? '');
+  const [notes, setNotes] = useState(booking?.notes ?? '');
+  const [status, setStatus] = useState<'confirmed' | 'cancelled' | 'completed'>(booking?.status ?? 'confirmed');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [step, setStep] = useState<'form' | 'submitting' | 'confirmed'>('form');
@@ -72,35 +70,6 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
   const handleClose = () => {
     if (!isSubmitting) onClose();
   };
-
-  // Initialize or reset state when modal opens or booking changes
-  useEffect(() => {
-    if (isOpen) {
-      setFieldErrors({});
-      setFormError(null);
-      setStep('form');
-      setCreatedBooking(null);
-      if (booking) {
-        setSelectedDate(booking.scheduledDate);
-        setSelectedSlot(booking.startTime);
-        setCustomerName(booking.customerName);
-        setCustomerEmail(booking.customerEmail);
-        setCustomerPhone(booking.customerPhone || '');
-        setServiceAddress(booking.serviceAddress || '');
-        setNotes(booking.notes || '');
-        setStatus(booking.status);
-      } else {
-        setSelectedDate(getLocalDateString());
-        setSelectedSlot(null);
-        setCustomerName('Aarav Sharma');
-        setCustomerEmail('aarav@example.com');
-        setCustomerPhone('');
-        setServiceAddress('');
-        setNotes('');
-        setStatus('confirmed');
-      }
-    }
-  }, [isOpen, booking]);
 
   if (!isOpen || (!service && !booking)) return null;
 

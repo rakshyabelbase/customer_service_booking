@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { serviceApi } from '../../../api/services/serviceApi';
 import { bookingApi } from '../../../api/services/bookingApi';
 import type { CreateBookingDto, ApiError } from '../../../types';
-import { useToast } from '../../../components/common/ToastContext';
+import { useToast } from '../../../components/common/useToast';
 
 export const availabilityKeys = {
   all: ['availability'],

@@ -1,7 +1,7 @@
-import type { Service } from '../../types';
+import type { Service } from '../../../types';
 import { Clock, Star, Edit3, Calendar, Tag, Building2, ArrowRight, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CardActionsMenu } from '../common/CardActionsMenu';
+import { CardActionsMenu } from '../../../components/common/CardActionsMenu';
 
 export type ServiceCardProps = {
   service: Service;

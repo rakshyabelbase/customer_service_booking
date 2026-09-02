@@ -6,7 +6,7 @@ import type {
   UpdateBookingDto,
   ApiError,
 } from '../../../types';
-import { useToast } from '../../../components/common/ToastContext';
+import { useToast } from '../../../components/common/useToast';
 import { availabilityKeys } from '../../services/hooks/useAvailability';
 import { serviceKeys } from '../../services/hooks/useServices';
 

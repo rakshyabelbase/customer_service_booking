@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useServicesQuery, useCreateServiceMutation, useUpdateServiceMutation, useDeleteServiceMutation } from '../../features/services/hooks/useServices';
-import { ApiError, type Service, type CreateServiceDto, type ServiceQueryParams } from '../../types';
-import { ServiceCard } from './ServiceCard';
-import { ServiceFormModal } from './ServiceFormModal';
-import { ConfirmDeleteModal } from './ConfirmDeleteModal';
-import { AvailabilityModal } from './AvailabilityModal';
+import { useServicesQuery, useCreateServiceMutation, useUpdateServiceMutation, useDeleteServiceMutation } from '../hooks/useServices';
+import { ApiError, type Service, type CreateServiceDto, type ServiceQueryParams } from '../../../types';
+import { ServiceCard } from '../components/ServiceCard';
+import { ServiceFormModal } from '../components/ServiceFormModal';
+import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal';
+import { AvailabilityModal } from '../components/AvailabilityModal';
 import { Search, Plus, Filter, RotateCcw, AlertOctagon, Layers, Frown } from 'lucide-react';
 
 const CATEGORIES = [
@@ -16,7 +16,7 @@ const CATEGORIES = [
   'Auto Care',
 ];
 
-export function ServiceList() {
+export function ServiceListPage() {
   const [params, setParams] = useState<ServiceQueryParams>({
     search: '',
     category: 'All',
@@ -251,14 +251,16 @@ export function ServiceList() {
       )}
 
       {/* MODALS */}
-      <ServiceFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        initialData={editingService}
-        isPending={createMutation.isPending || updateMutation.isPending}
-        serverError={createMutation.error || updateMutation.error}
-      />
+      {isFormModalOpen && (
+        <ServiceFormModal
+          isOpen
+          onClose={() => setIsFormModalOpen(false)}
+          onSubmit={handleFormSubmit}
+          initialData={editingService}
+          isPending={createMutation.isPending || updateMutation.isPending}
+          serverError={createMutation.error || updateMutation.error}
+        />
+      )}
 
       <ConfirmDeleteModal
         isOpen={isDeleteModalOpen}

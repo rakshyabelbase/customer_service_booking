@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import type { Service, CreateBookingDto } from '../../types';
-import { useAvailabilityQuery, useCreateBookingMutation } from '../../features/services/hooks/useAvailability';
+import type { Service, CreateBookingDto } from '../../../types';
+import { useAvailabilityQuery, useCreateBookingMutation } from '../hooks/useAvailability';
 import { Calendar, Clock, CheckCircle2, AlertCircle, Loader2, X, User, Lock, Check } from 'lucide-react';
-import { Button } from '../common/Button';
-import { ButtonGroup } from '../common/ButtonGroup';
-import { getLocalDateString } from '../../utils/date';
+import { Button } from '../../../components/common/Button';
+import { ButtonGroup } from '../../../components/common/ButtonGroup';
+import { getLocalDateString } from '../../../utils/date';
 
 type AvailabilityModalProps = {
   isOpen: boolean;

@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { CheckCircle2 } from 'lucide-react';
-import type { Booking } from '../../types';
-import { Button } from '../common/Button';
-import { ButtonGroup } from '../common/ButtonGroup';
+import type { Booking } from '../../../types';
+import { Button } from '../../../components/common/Button';
+import { ButtonGroup } from '../../../components/common/ButtonGroup';
 
 type BookingConfirmationViewProps = { booking: Booking; onBrowseServices: () => void; onViewBookings: () => void };
 

@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertCircle, Building2, Calendar, Clock, MapPin, RefreshCw, Search } from 'lucide-react';
-import type { Booking } from '../../types';
-import { useServiceBookings } from '../../features/bookings/hooks/useBookings';
-import { Button } from '../common/Button';
+import type { Booking } from '../../../types';
+import { useServiceBookings } from '../hooks/useBookings';
+import { Button } from '../../../components/common/Button';
 
 export function MyBookingsPage() {
   const navigate = useNavigate();
