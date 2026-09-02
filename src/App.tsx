@@ -1,13 +1,6 @@
-import { QueryClient, QueryClientProvider, useIsFetching } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from './components/common/ToastContext';
-import { ServiceList } from './components/services/ServiceList';
-import { ServiceDetailPage } from './components/services/ServiceDetailPage';
-import { DevToolbar } from './components/common/DevToolbar';
-import { useState } from 'react';
-import { Navbar } from './components/layout/Navbar';
-import { MyBookingsPage } from './components/bookings/MyBookingsPage';
-import { BookingConfirmationPage } from './components/bookings/BookingConfirmationPage';
+import { AppRoutes } from './routes/AppRoutes';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,40 +12,11 @@ const queryClient = new QueryClient({
   },
 });
 
-function MainLayout() {
-  const [devToolbarOpen, setDevToolbarOpen] = useState(false);
-  const isFetchingCount = useIsFetching();
-
-  return (
-    <div className="min-h-screen bg-app">
-      <Navbar
-        isFetching={isFetchingCount > 0}
-        devToolbarOpen={devToolbarOpen}
-        onToggleDevToolbar={() => {
-          setDevToolbarOpen((previousValue) => !previousValue);
-        }}
-      />
-      <DevToolbar isOpen={devToolbarOpen} onClose={() => setDevToolbarOpen(false)} />
-      <main className="app-container">
-        <Routes>
-          <Route path="/" element={<ServiceList />} />
-          <Route path="/services/:serviceId" element={<ServiceDetailPage />} />
-          <Route path="/bookings" element={<MyBookingsPage />} />
-          <Route path="/bookings/confirmation/:bookingId" element={<BookingConfirmationPage />} />
-          <Route path="*" element={<ServiceList />} />
-        </Routes>
-      </main>
-    </div>
-  );
-}
-
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <BrowserRouter>
-          <MainLayout />
-        </BrowserRouter>
+        <AppRoutes />
       </ToastProvider>
     </QueryClientProvider>
   );
