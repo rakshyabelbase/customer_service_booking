@@ -1,5 +1,9 @@
 # Customer Service Booking System
 
+## Live Demo
+
+[View Live Application](https://customer-service-booking-system.netlify.app/)
+
 A small production-style React application for browsing services, checking availability, creating bookings, and managing existing bookings.
 
 The project focuses on frontend architecture, API-first development, reusable components, state handling, testing, and maintainability.
