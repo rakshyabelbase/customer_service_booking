@@ -19,6 +19,8 @@ import {
   MapPin,
   Building2,
 } from 'lucide-react';
+import { Button } from '../common/Button';
+import { ButtonGroup } from '../common/ButtonGroup';
 
 type BookingDetailModalProps = {
   bookingId: string | null;
@@ -75,14 +77,15 @@ export function BookingDetailModal({
             <Calendar size={20} className="text-primary" />
             <span>Booking Details {booking ? `#${booking.bookingNumber}` : ''}</span>
           </div>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             className="modal-close-btn"
             onClick={onClose}
             aria-label="Close modal"
+            leftIcon={<X size={18} />}
           >
-            <X size={18} />
-          </button>
+          </Button>
         </div>
 
         <div className="modal-body-padded">
@@ -99,13 +102,14 @@ export function BookingDetailModal({
               <div>
                 <strong>Error loading booking:</strong> {bookingQuery.error?.message}
               </div>
-              <button
-                type="button"
-                className="btn-retry-inline ml-auto"
+              <Button
+                size="sm"
+                variant="ghost"
+                className="ml-auto"
                 onClick={() => bookingQuery.refetch()}
               >
                 Retry
-              </button>
+              </Button>
             </div>
           )}
 
@@ -209,34 +213,32 @@ export function BookingDetailModal({
 
               {/* Action buttons */}
               <div className="modal-actions-bar mt-6 flex-between align-center">
-                <button
-                  type="button"
-                  className="btn-danger-outline flex-align"
+                <Button
+                  variant="danger"
+                  leftIcon={<Trash2 size={16} />}
                   onClick={() => {
                     onClose();
                     onCancel(booking);
                   }}
                 >
-                  <Trash2 size={16} className="mr-1" />
-                  <span>Cancel Booking</span>
-                </button>
+                  Cancel Booking
+                </Button>
 
-                <div className="flex-align gap-2">
-                  <button type="button" className="btn-modal-cancel" onClick={onClose}>
+                <ButtonGroup align="right">
+                  <Button variant="secondary" onClick={onClose}>
                     Close
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-primary flex-align"
+                  </Button>
+                  <Button
+                    variant="primary"
+                    leftIcon={<Edit3 size={16} />}
                     onClick={() => {
                       onClose();
                       onEdit(booking);
                     }}
                   >
-                    <Edit3 size={16} className="mr-1" />
-                    <span>Edit / Reschedule</span>
-                  </button>
-                </div>
+                    Edit / Reschedule
+                  </Button>
+                </ButtonGroup>
               </div>
             </div>
           )}
