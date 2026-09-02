@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { Service, CreateServiceDto, FieldErrors, ApiError } from '../../../types';
 import { X, Loader2, PlusCircle, Save } from 'lucide-react';
+import { serviceSchema } from '../schemas/serviceSchema';
+import { zodErrorsToFieldErrors } from '../../../utils/validation';
 
 type ServiceFormModalProps = {
   isOpen: boolean;
@@ -63,61 +65,28 @@ export function ServiceFormModal({
   );
 
   const [clientErrors, setClientErrors] = useState<FieldErrors>({});
+  const [editedFields, setEditedFields] = useState<Set<string>>(() => new Set());
 
   // Combine client-side errors and server-returned field errors
   const activeErrors: FieldErrors = {
     ...clientErrors,
-    ...(serverError?.fieldErrors || {}),
+    ...Object.fromEntries(
+      Object.entries(serverError?.fieldErrors || {}).filter(([field]) => !editedFields.has(field))
+    ),
   };
 
   if (!isOpen) return null;
 
-  const validateForm = (): boolean => {
-    const errors: FieldErrors = {};
-
-    if (!formData.name.trim()) {
-      errors.name = 'Service name is required.';
-    } else if (formData.name.trim().length < 3) {
-      errors.name = 'Service name must be at least 3 characters.';
-    }
-
-    if (!formData.description.trim()) {
-      errors.description = 'Description is required.';
-    }
-
-    if (!formData.category.trim()) {
-      errors.category = 'Category is required.';
-    }
-
-    if (!formData.providerName.trim()) {
-      errors.providerName = 'Provider name is required.';
-    }
-
-    if (formData.price === undefined || formData.price === null || isNaN(formData.price)) {
-      errors.price = 'Price is required.';
-    } else if (formData.price <= 0) {
-      errors.price = 'Price must be a positive number greater than 0.';
-    }
-
-    if (
-      formData.durationMinutes === undefined ||
-      formData.durationMinutes === null ||
-      isNaN(formData.durationMinutes)
-    ) {
-      errors.durationMinutes = 'Duration is required.';
-    } else if (formData.durationMinutes < 15) {
-      errors.durationMinutes = 'Duration must be at least 15 minutes.';
-    }
-
-    setClientErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    const result = serviceSchema.safeParse(formData);
+    if (!result.success) {
+      setClientErrors(zodErrorsToFieldErrors(result.error));
+      return;
+    }
+    setEditedFields(new Set());
     try {
-      await onSubmit(formData);
+      await onSubmit(result.data);
     } catch {
       // Error handled by mutation hook
     }
@@ -131,6 +100,7 @@ export function ServiceFormModal({
       ...prev,
       [name]: type === 'number' ? (value === '' ? 0 : Number(value)) : value,
     }));
+    setEditedFields((current) => new Set(current).add(name));
 
     if (clientErrors[name]) {
       setClientErrors((prev) => {

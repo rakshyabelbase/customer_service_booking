@@ -28,6 +28,8 @@ import { Button } from '../../../components/common/Button';
 import { ButtonGroup } from '../../../components/common/ButtonGroup';
 import { getLocalDateString } from '../../../utils/date';
 import { BookingConfirmationView } from './BookingConfirmationView';
+import { bookingSchema } from '../schemas/bookingSchema';
+import { zodErrorsToFieldErrors } from '../../../utils/validation';
 
 type BookingModalProps = {
   isOpen: boolean;
@@ -42,8 +44,8 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
 
   const [selectedDate, setSelectedDate] = useState(booking?.scheduledDate ?? getLocalDateString());
   const [selectedSlot, setSelectedSlot] = useState<string | null>(booking?.startTime ?? null);
-  const [customerName, setCustomerName] = useState(booking?.customerName ?? 'Aarav Sharma');
-  const [customerEmail, setCustomerEmail] = useState(booking?.customerEmail ?? 'aarav@example.com');
+  const [customerName, setCustomerName] = useState(booking?.customerName ?? '');
+  const [customerEmail, setCustomerEmail] = useState(booking?.customerEmail ?? '');
   const [customerPhone, setCustomerPhone] = useState(booking?.customerPhone ?? '');
   const [serviceAddress, setServiceAddress] = useState(booking?.serviceAddress ?? '');
   const [notes, setNotes] = useState(booking?.notes ?? '');
@@ -71,6 +73,15 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
     if (!isSubmitting) onClose();
   };
 
+  const clearFieldError = (field: string) => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  };
+
   if (!isOpen || (!service && !booking)) return null;
 
   const displayService = service || {
@@ -86,69 +97,53 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
   const slots = availabilityQuery.data?.data.slots || [];
   const isLoadingSlots = availabilityQuery.isLoading || availabilityQuery.isFetching;
 
-  const validateClientSide = (): boolean => {
-    const errors: Record<string, string> = {};
-
-    if (!customerName.trim()) {
-      errors.customerName = 'Customer name is required.';
-    } else if (customerName.trim().length < 2) {
-      errors.customerName = 'Name must be at least 2 characters.';
-    }
-
-    if (!customerEmail.trim()) {
-      errors.customerEmail = 'Customer email is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim())) {
-      errors.customerEmail = 'Please provide a valid email address.';
-    }
-
-    if (!selectedDate) {
-      errors.scheduledDate = 'Booking date is required.';
-    }
-
-    if (!selectedSlot) {
-      errors.startTime = 'Please select an available time slot.';
-    }
-    if (serviceAddress.trim().length < 8) {
-      errors.serviceAddress = 'Enter a complete service address (at least 8 characters).';
-    }
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
     setFieldErrors({});
 
-    if (!validateClientSide()) {
+    const result = bookingSchema.safeParse({
+      customerName,
+      customerEmail,
+      customerPhone,
+      serviceAddress,
+      scheduledDate: selectedDate,
+      startTime: selectedSlot ?? '',
+      notes,
+      status,
+    });
+
+    if (!result.success) {
+      setFieldErrors(zodErrorsToFieldErrors(result.error));
       return;
     }
+
+    const values = result.data;
 
     setStep('submitting');
     try {
       if (isEditMode && booking) {
         const dto: UpdateBookingDto = {
-          customerName: customerName.trim(),
-          customerEmail: customerEmail.trim(),
-          customerPhone: customerPhone.trim() || undefined,
-          serviceAddress: serviceAddress.trim(),
-          scheduledDate: selectedDate,
-          startTime: selectedSlot!,
-          status,
-          notes: notes.trim() || undefined,
+          customerName: values.customerName,
+          customerEmail: values.customerEmail,
+          customerPhone: values.customerPhone || undefined,
+          serviceAddress: values.serviceAddress,
+          scheduledDate: values.scheduledDate,
+          startTime: values.startTime,
+          status: values.status,
+          notes: values.notes || undefined,
         };
         await updateMutation.mutateAsync({ id: booking.id, dto });
       } else {
         const dto: CreateBookingDto = {
           serviceId: displayService.id,
-          customerName: customerName.trim(),
-          customerEmail: customerEmail.trim(),
-          customerPhone: customerPhone.trim() || undefined,
-          serviceAddress: serviceAddress.trim(),
-          scheduledDate: selectedDate,
-          startTime: selectedSlot!,
-          notes: notes.trim() || undefined,
+          customerName: values.customerName,
+          customerEmail: values.customerEmail,
+          customerPhone: values.customerPhone || undefined,
+          serviceAddress: values.serviceAddress,
+          scheduledDate: values.scheduledDate,
+          startTime: values.startTime,
+          notes: values.notes || undefined,
         };
         const response = await createMutation.mutateAsync(dto);
         setCreatedBooking(response.data);
@@ -161,7 +156,6 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
       if (err instanceof ApiError) {
         if (err.statusCode === 400 && err.fieldErrors) {
           setFieldErrors(err.fieldErrors);
-          setFormError(err.message);
         } else if (err.statusCode === 409) {
           setFormError(err.message || 'This slot was just booked by another user. Please pick a different slot.');
           // Refresh slot data
@@ -243,8 +237,10 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
                   min={getLocalDateString()}
                   onChange={(e) => {
                     setSelectedDate(e.target.value);
+                    clearFieldError('scheduledDate');
                     if (selectedDate !== e.target.value) {
                       setSelectedSlot(null);
+                      clearFieldError('startTime');
                     }
                   }}
                 />
@@ -311,7 +307,12 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
                           className={`slot-card ${
                             isAvailable ? 'slot-available' : 'slot-booked'
                           } ${isSelected ? 'slot-selected' : ''}`}
-                          onClick={() => isAvailable && setSelectedSlot(slot.startTime)}
+                          onClick={() => {
+                            if (isAvailable) {
+                              setSelectedSlot(slot.startTime);
+                              clearFieldError('startTime');
+                            }
+                          }}
                         >
                           <span className="slot-time">
                             <Clock size={13} />
@@ -366,7 +367,10 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
                       className={`form-input ${fieldErrors.customerName ? 'input-error' : ''}`}
                       placeholder="e.g. Aarav Sharma"
                       value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
+                      onChange={(e) => {
+                        setCustomerName(e.target.value);
+                        clearFieldError('customerName');
+                      }}
                     />
                   </div>
                   {fieldErrors.customerName && (
@@ -385,7 +389,10 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
                       className={`form-input ${fieldErrors.customerEmail ? 'input-error' : ''}`}
                       placeholder="e.g. customer@example.com"
                       value={customerEmail}
-                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      onChange={(e) => {
+                        setCustomerEmail(e.target.value);
+                        clearFieldError('customerEmail');
+                      }}
                     />
                   </div>
                   {fieldErrors.customerEmail && (
@@ -398,7 +405,7 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
                 <label className="form-label">Service Address <span className="text-danger">*</span></label>
                 <div className="input-with-icon">
                   <MapPin size={15} className="input-icon" />
-                  <input type="text" className={`form-input ${fieldErrors.serviceAddress ? 'input-error' : ''}`} placeholder="Street, area, city and postal code" value={serviceAddress} onChange={(e) => setServiceAddress(e.target.value)} />
+                  <input type="text" className={`form-input ${fieldErrors.serviceAddress ? 'input-error' : ''}`} placeholder="Street, area, city and postal code" value={serviceAddress} onChange={(e) => { setServiceAddress(e.target.value); clearFieldError('serviceAddress'); }} />
                 </div>
                 {fieldErrors.serviceAddress && <span className="field-error-text">{fieldErrors.serviceAddress}</span>}
               </div>

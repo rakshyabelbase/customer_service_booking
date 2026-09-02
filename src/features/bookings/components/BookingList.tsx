@@ -11,7 +11,6 @@ import {
   Eye,
   Edit3,
   Trash2,
-  Plus,
   RefreshCw,
   Search,
   CheckCircle2,
@@ -108,13 +107,13 @@ export function BookingList({
           </p>
         </div>
 
-        <Button
+        {/* <Button
           variant="primary"
           leftIcon={<Plus size={16} />}
           onClick={() => onOpenBookingModal(service || undefined)}
         >
           New Booking
-        </Button>
+        </Button> */}
       </div>
 
       {/* Filter and Search Bar */}
@@ -188,7 +187,7 @@ export function BookingList({
               ? 'No bookings match your current filter criteria. Try resetting filters.'
               : 'There are no customer bookings registered for this service yet. Click below to create the first booking.'}
           </p>
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <Button
               variant="secondary"
               leftIcon={<Plus size={16} />}
@@ -200,7 +199,7 @@ export function BookingList({
             >
               Book Now
             </Button>
-          </div>
+          </div> */}
         </div>
       )}
 
