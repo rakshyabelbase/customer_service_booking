@@ -23,8 +23,8 @@ export function AvailabilityModal({
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState('Anish Adhikari');
   const [customerEmail, setCustomerEmail] = useState('anish@example.com');
-  const [customerPhone, setCustomerPhone] = useState('9841999888');
-  const [serviceAddress, setServiceAddress] = useState('Lazimpat Road, Kathmandu 44600');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [serviceAddress, setServiceAddress] = useState('');
 
   const availabilityQuery = useAvailabilityQuery(
     service?.id || '',
