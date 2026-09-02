@@ -1,87 +1,171 @@
-# Customer Service Booking API Contract
+# API Contract
 
 ## Overview
 
-This document defines the RESTful API contract for the Customer Service Booking system. The contract specifies endpoint schemas, parameters, request/response payload types, standard error structures, and UI behavioral contracts for loading, empty, and error states.
+This document defines the API contract used by the Customer Service Booking frontend.
 
-- **Base URL:** `/api/v1`
-- **Content-Type:** `application/json`
+The frontend communicates with a mock REST API using JSON.
+
+* **Base URL:** `/api/v1`
+* **Content-Type:** `application/json`
+
+The API contract is designed so that the frontend can be developed independently from a real backend while keeping request and response structures consistent.
 
 ---
 
-## Standard Response & Error Formats
+# Standard Response Format
 
-### Standard Single Resource Response (`ApiResponse<T>`)
+## Single Resource
 
 ```json
 {
-  "data": { ... }
+  "data": {}
 }
 ```
 
-### Standard List Resource Response (`ApiListResponse<T>`)
+## List Response
 
 ```json
 {
-  "data": [ ... ],
+  "data": [],
   "meta": {
-    "total": 12
+    "total": 0
   }
 }
 ```
 
-### Standard Error Response (`ApiErrorPayload`)
+## Error Response
 
 ```json
 {
   "error": {
-    "code": "VALIDATION_ERROR | NOT_FOUND | CONFLICT | INTERNAL_SERVER_ERROR",
-    "message": "Human-readable summary message.",
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed.",
     "fieldErrors": {
-      "fieldName": "Specific validation failure description."
+      "fieldName": "Validation message"
     }
   }
 }
 ```
 
----
-
-## Endpoints Overview
-
-| Method | Endpoint | Purpose |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/services` | List & filter services |
-| `GET` | `/api/v1/services/{service_id}` | Retrieve service details |
-| `POST` | `/api/v1/services` | Create new service |
-| `PUT` | `/api/v1/services/{service_id}` | Update existing service |
-| `DELETE` | `/api/v1/services/{service_id}` | Delete service |
-| `GET` | `/api/v1/services/{service_id}/availability` | Query available booking time slots |
-| `POST` | `/api/v1/bookings` | Create new booking |
-| `GET` | `/api/v1/bookings` | List customer bookings (supports `serviceId` query filter) |
-| `GET` | `/api/v1/bookings/{booking_id}` | Retrieve booking details |
-| `PATCH` | `/api/v1/bookings/{booking_id}` | Update/reschedule existing booking |
-| `DELETE` | `/api/v1/bookings/{booking_id}` | Cancel/delete existing booking |
+`fieldErrors` is optional and is mainly returned for validation failures.
 
 ---
+
+# Common Error Codes
+
+| Code                       | Description                                             |
+| -------------------------- | ------------------------------------------------------- |
+| `VALIDATION_ERROR`         | Request data or parameters are invalid                  |
+| `NOT_FOUND`                | Requested resource does not exist                       |
+| `CONFLICT`                 | Request conflicts with existing data                    |
+| `SLOT_UNAVAILABLE`         | Selected booking slot is no longer available            |
+| `ACTIVE_BOOKINGS_CONFLICT` | Service cannot be deleted because active bookings exist |
+| `INTERNAL_SERVER_ERROR`    | Unexpected server error                                 |
+
+---
+
+# Endpoints Overview
+
+| Method   | Endpoint                            | Description                    |
+| -------- | ----------------------------------- | ------------------------------ |
+| `GET`    | `/services`                         | List and filter services       |
+| `GET`    | `/services/:serviceId`              | Get service details            |
+| `POST`   | `/services`                         | Create a service               |
+| `PUT`    | `/services/:serviceId`              | Update a service               |
+| `DELETE` | `/services/:serviceId`              | Delete a service               |
+| `GET`    | `/services/:serviceId/availability` | Get service availability       |
+| `POST`   | `/bookings`                         | Create a booking               |
+| `GET`    | `/bookings`                         | List bookings                  |
+| `GET`    | `/bookings/:bookingId`              | Get a booking                  |
+| `PATCH`  | `/bookings/:bookingId`              | Update or reschedule a booking |
+| `DELETE` | `/bookings/:bookingId`              | Delete/cancel a booking        |
+
+All paths below are relative to:
+
+```text
+/api/v1
+```
+
+---
+
+# Core Resource Shapes
+
+## Service
+
+```json
+{
+  "id": "service-001",
+  "name": "Home Deep Cleaning",
+  "description": "Comprehensive cleaning for homes and apartments.",
+  "category": "Home Cleaning",
+  "provider": {
+    "id": "prov-01",
+    "name": "CleanCare Services"
+  },
+  "price": 2500,
+  "currency": "NPR",
+  "durationMinutes": 120,
+  "rating": 4.8,
+  "imageUrl": "/images/cleaning.png"
+}
+```
+
+---
+
+## Booking
+
+```json
+{
+  "id": "booking-101",
+  "bookingNumber": "CSB-2026-0101",
+  "serviceId": "service-001",
+  "serviceName": "Home Deep Cleaning",
+  "provider": {
+    "id": "prov-01",
+    "name": "CleanCare Services"
+  },
+  "customerName": "Aarav Sharma",
+  "customerEmail": "aarav@example.com",
+  "customerPhone": "9841000001",
+  "serviceAddress": "Lazimpat Road, Kathmandu 44600",
+  "scheduledDate": "2026-09-02",
+  "startTime": "09:00",
+  "endTime": "11:00",
+  "price": 2500,
+  "currency": "NPR",
+  "status": "confirmed",
+  "createdAt": "2026-08-30T10:00:00Z"
+}
+```
+
+---
+
+# Services
 
 ## 1. List Services
 
-### HTTP Method & Path
-`GET /api/v1/services`
+```http
+GET /services
+```
 
-### Purpose
-Retrieve a list of available services, optionally filtered by search keyword or category.
+Returns all available services.
 
-### Request Parameters
-- **Query Parameters:**
-  - `search` (string, optional): Search keyword against service name or description.
-  - `category` (string, optional): Filter by category name (e.g., `"Home Cleaning"`, `"Plumbing"`, `"Electrical"`, `"Appliance"`).
+### Optional Query Parameters
 
-### Request Body
-None (`GET`).
+| Parameter  | Type   | Description                           |
+| ---------- | ------ | ------------------------------------- |
+| `search`   | string | Search by service name or description |
+| `category` | string | Filter by service category            |
 
-### Response Body
-Status: `200 OK`
+### Example
+
+```http
+GET /services?search=cleaning&category=Home%20Cleaning
+```
+
+### Response
+
 ```json
 {
   "data": [
@@ -107,51 +191,30 @@ Status: `200 OK`
 }
 ```
 
-### HTTP Status Codes
-- `200 OK`: Request succeeded.
-- `400 Bad Request`: Malformed query parameters.
-- `500 Internal Server Error`: Unexpected server error.
+### Status Codes
 
-### Validation Errors (400 Bad Request)
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid query parameters provided.",
-    "fieldErrors": {
-      "category": "Category parameter must be a string."
-    }
-  }
-}
-```
-
-### Business Errors
-None.
-
-### UI Behavior
-- **Loading:** Display grid of skeleton service cards while `isLoading` is true.
-- **Empty:** Display friendly empty-state illustration when `data` array is empty, with a button to reset filters.
-- **Error:** Render red error banner with error message and an interactive **Retry** button invoking `refetch()`.
+* `200 OK`
+* `400 Bad Request`
+* `500 Internal Server Error`
 
 ---
 
 ## 2. Get Service Details
 
-### HTTP Method & Path
-`GET /api/v1/services/{service_id}`
+```http
+GET /services/:serviceId
+```
 
-### Purpose
-Retrieve detailed specifications for a specific service by ID.
+Returns a single service.
 
-### Request Parameters
-- **Path Parameters:**
-  - `service_id` (string, required): Unique service ID.
+### Example
 
-### Request Body
-None (`GET`).
+```http
+GET /services/service-001
+```
 
-### Response Body
-Status: `200 OK`
+### Response
+
 ```json
 {
   "data": {
@@ -172,40 +235,22 @@ Status: `200 OK`
 }
 ```
 
-### HTTP Status Codes
-- `200 OK`: Service found.
-- `404 Not Found`: Service does not exist.
-- `500 Internal Server Error`: Unexpected server error.
+### Status Codes
 
-### Business Errors (404 Not Found)
-```json
-{
-  "error": {
-    "code": "NOT_FOUND",
-    "message": "Service with ID 'service-999' was not found."
-  }
-}
-```
-
-### UI Behavior
-- **Loading:** Display skeleton placeholder for detail panel.
-- **Empty / Not Found:** Show "Service Not Found" notice with a button returning to service list.
-- **Error:** Show error message + Retry action.
+* `200 OK`
+* `404 Not Found`
+* `500 Internal Server Error`
 
 ---
 
 ## 3. Create Service
 
-### HTTP Method & Path
-`POST /api/v1/services`
+```http
+POST /services
+```
 
-### Purpose
-Create a new service offering.
+### Request
 
-### Request Parameters
-None.
-
-### Request Body
 ```json
 {
   "name": "AC Maintenance & Repair",
@@ -218,34 +263,16 @@ None.
 }
 ```
 
-### Response Body
-Status: `201 Created`
-```json
-{
-  "data": {
-    "id": "service-005",
-    "name": "AC Maintenance & Repair",
-    "description": "Full HVAC diagnostic and coil cleaning.",
-    "category": "Appliance",
-    "provider": {
-      "id": "prov-05",
-      "name": "CoolTech Solutions"
-    },
-    "price": 1800,
-    "currency": "NPR",
-    "durationMinutes": 90,
-    "rating": 5.0,
-    "imageUrl": ""
-  }
-}
+### Success
+
+```text
+201 Created
 ```
 
-### HTTP Status Codes
-- `201 Created`: Service created successfully.
-- `400 Bad Request`: Field validation failure.
-- `500 Internal Server Error`: Unexpected server error.
+The response contains the newly created service inside `data`.
 
-### Validation Errors (400 Bad Request)
+### Validation Example
+
 ```json
 {
   "error": {
@@ -253,36 +280,30 @@ Status: `201 Created`
     "message": "Service validation failed.",
     "fieldErrors": {
       "name": "Service name is required.",
-      "price": "Price must be a positive number greater than 0.",
-      "durationMinutes": "Duration must be at least 15 minutes."
+      "price": "Price must be greater than 0."
     }
   }
 }
 ```
 
-### Business Errors
-None.
+### Status Codes
 
-### UI Behavior
-- **Loading:** Disable form inputs; display spinner on modal submit button.
-- **Error:** Show inline field validation messages under inputs (for 400) or general alert banner for server errors (500).
-- **Success:** Close modal, trigger success toast, and invalidate `['services']` query cache to refetch updated list.
+* `201 Created`
+* `400 Bad Request`
+* `500 Internal Server Error`
 
 ---
 
 ## 4. Update Service
 
-### HTTP Method & Path
-`PUT /api/v1/services/{service_id}`
+```http
+PUT /services/:serviceId
+```
 
-### Purpose
-Modify existing service specifications.
+Updates an existing service.
 
-### Request Parameters
-- **Path Parameters:**
-  - `service_id` (string, required): ID of service to update.
+### Request
 
-### Request Body
 ```json
 {
   "name": "Updated Home Deep Cleaning",
@@ -295,132 +316,122 @@ Modify existing service specifications.
 }
 ```
 
-### Response Body
-Status: `200 OK`
-```json
-{
-  "data": {
-    "id": "service-001",
-    "name": "Updated Home Deep Cleaning",
-    "description": "Enhanced residential deep cleaning service.",
-    "category": "Home Cleaning",
-    "provider": {
-      "id": "prov-01",
-      "name": "CleanCare Premium"
-    },
-    "price": 2800,
-    "currency": "NPR",
-    "durationMinutes": 150,
-    "rating": 4.8,
-    "imageUrl": "/images/cleaning.png"
-  }
-}
-```
+### Status Codes
 
-### HTTP Status Codes
-- `200 OK`: Updated successfully.
-- `400 Bad Request`: Validation failure.
-- `404 Not Found`: Service ID not found.
-- `500 Internal Server Error`: Unexpected server error.
-
-### UI Behavior
-- **Loading:** Disable modal controls; display spinner on "Save Changes" button.
-- **Error:** Keep modal open; display inline error messages or top error alert.
-- **Success:** Close modal, display success toast notification, and invalidate queries (`queryClient.invalidateQueries`).
+* `200 OK`
+* `400 Bad Request`
+* `404 Not Found`
+* `500 Internal Server Error`
 
 ---
 
 ## 5. Delete Service
 
-### HTTP Method & Path
-`DELETE /api/v1/services/{service_id}`
+```http
+DELETE /services/:serviceId
+```
 
-### Purpose
-Remove a service from the system.
+Deletes an existing service.
 
-### Request Parameters
-- **Path Parameters:**
-  - `service_id` (string, required): Unique service ID.
+### Success
 
-### Request Body
-None (`DELETE`).
+```text
+204 No Content
+```
 
-### Response Body
-Status: `204 No Content` (empty body).
+### Active Booking Conflict
 
-### HTTP Status Codes
-- `204 No Content`: Service deleted.
-- `404 Not Found`: Service not found.
-- `409 Conflict`: Service cannot be deleted because active bookings exist.
-- `500 Internal Server Error`: Unexpected server error.
+A service with active bookings cannot be deleted.
 
-### Business Error (409 Conflict)
 ```json
 {
   "error": {
     "code": "ACTIVE_BOOKINGS_CONFLICT",
-    "message": "Cannot delete service 'service-001' because it has active active/confirmed customer bookings."
+    "message": "Cannot delete this service because active bookings exist."
   }
 }
 ```
 
-### UI Behavior
-- **Loading:** Show spinner on delete confirmation dialog button.
-- **Conflict Error (409):** Show modal alert explaining that the service cannot be deleted due to active customer bookings.
-- **Success:** Close confirmation modal, display success toast, invalidate service query cache.
+### Status Codes
+
+* `204 No Content`
+* `404 Not Found`
+* `409 Conflict`
+* `500 Internal Server Error`
 
 ---
 
+# Availability
+
 ## 6. Get Service Availability
 
-### HTTP Method & Path
-`GET /api/v1/services/{service_id}/availability`
+```http
+GET /services/:serviceId/availability
+```
 
-### Purpose
-Retrieve available date and time slots for a service.
+Returns available time slots for a service.
 
-### Request Parameters
-- **Path Parameters:** `service_id` (string)
-- **Query Parameters:** `date` (string `YYYY-MM-DD`, optional, defaults to current date).
+### Query Parameters
 
-### Response Body
-Status: `200 OK`
+| Parameter | Type         | Required | Description                |
+| --------- | ------------ | -------- | -------------------------- |
+| `date`    | `YYYY-MM-DD` | No       | Date to check availability |
+
+### Example
+
+```http
+GET /services/service-001/availability?date=2026-09-02
+```
+
+### Response
+
 ```json
 {
   "data": {
     "serviceId": "service-001",
-    "date": "2026-09-01",
+    "date": "2026-09-02",
     "timezone": "Asia/Kathmandu",
     "slots": [
-      { "startTime": "09:00", "endTime": "11:00", "available": true },
-      { "startTime": "11:30", "endTime": "13:30", "available": false },
-      { "startTime": "14:00", "endTime": "16:00", "available": true }
+      {
+        "startTime": "09:00",
+        "endTime": "11:00",
+        "available": true
+      },
+      {
+        "startTime": "11:30",
+        "endTime": "13:30",
+        "available": false
+      },
+      {
+        "startTime": "14:00",
+        "endTime": "16:00",
+        "available": true
+      }
     ]
   }
 }
 ```
 
-### HTTP Status Codes
-- `200 OK`: Slot availability retrieved.
-- `404 Not Found`: Service not found.
-- `500 Internal Server Error`: Server error.
+### Status Codes
 
-### UI Behavior
-- **Loading:** Render slot skeletons.
-- **Empty:** Show notice if no slots exist for the selected date.
-- **Success:** Render interactive time slot badges (green for available, disabled gray for booked).
+* `200 OK`
+* `404 Not Found`
+* `500 Internal Server Error`
 
 ---
 
+# Bookings
+
 ## 7. Create Booking
 
-### HTTP Method & Path
-`POST /api/v1/bookings`
+```http
+POST /bookings
+```
 
-### Purpose
-Book a service time slot for a customer.
+Creates a booking for an available service time slot.
 
-### Request Body
+### Request
+
 ```json
 {
   "serviceId": "service-001",
@@ -428,13 +439,13 @@ Book a service time slot for a customer.
   "customerEmail": "ramesh@example.com",
   "customerPhone": "9841234567",
   "serviceAddress": "Lazimpat Road, Kathmandu 44600",
-  "scheduledDate": "2026-09-01",
+  "scheduledDate": "2026-09-02",
   "startTime": "09:00"
 }
 ```
 
-### Response Body
-Status: `201 Created`
+### Response
+
 ```json
 {
   "data": {
@@ -442,63 +453,87 @@ Status: `201 Created`
     "bookingNumber": "CSB-2026-0101",
     "serviceId": "service-001",
     "serviceName": "Home Deep Cleaning",
-    "provider": { "id": "prov-01", "name": "CleanCare Services" },
+    "provider": {
+      "id": "prov-01",
+      "name": "CleanCare Services"
+    },
     "customerName": "Ramesh Adhikari",
     "customerEmail": "ramesh@example.com",
     "serviceAddress": "Lazimpat Road, Kathmandu 44600",
-    "scheduledDate": "2026-09-01",
+    "scheduledDate": "2026-09-02",
     "startTime": "09:00",
     "endTime": "11:00",
-    "status": "confirmed",
-    "createdAt": "2026-08-31T22:00:00Z"
+    "status": "confirmed"
   }
 }
 ```
 
-### HTTP Status Codes
-- `201 Created`: Booking confirmed.
-- `400 Bad Request`: Validation failure.
-- `409 Conflict`: Selected slot has already been booked by another customer.
-- `500 Internal Server Error`: Server error.
+### Validation Rules
 
-### Server-side validation
-- `scheduledDate` must be a real `YYYY-MM-DD` date and cannot be in the past.
-- `startTime` must match one of the service's published availability slots.
-- `customerEmail` must be a valid email address.
-- `serviceAddress` is required and must contain at least 8 characters.
+* `serviceId` must identify an existing service.
+* `customerName` is required.
+* `customerEmail` must contain a valid email address.
+* `serviceAddress` is required.
+* `scheduledDate` must be a valid `YYYY-MM-DD` date.
+* The booking date cannot be in the past.
+* `startTime` must match an available service slot.
 
-### Business Error (409 Conflict)
+### Slot Conflict
+
+Availability may change between selecting a slot and submitting the booking.
+
+If another customer has already booked the selected slot, the API returns:
+
+```text
+409 Conflict
+```
+
 ```json
 {
   "error": {
     "code": "SLOT_UNAVAILABLE",
-    "message": "The time slot 09:00 on 2026-09-01 is no longer available."
+    "message": "The selected time slot is no longer available."
   }
 }
 ```
 
-### UI Behavior
-- **Loading:** Disable submission, display loading indicator.
-- **Conflict:** Refresh availability slots and inform user to choose another time.
-- **Success:** Display booking confirmation dialog with booking reference number.
+The frontend should refresh availability and allow the customer to choose another slot.
+
+### Status Codes
+
+* `201 Created`
+* `400 Bad Request`
+* `404 Not Found`
+* `409 Conflict`
+* `500 Internal Server Error`
 
 ---
 
 ## 8. List Bookings
 
-### HTTP Method & Path
-`GET /api/v1/bookings`
+```http
+GET /bookings
+```
 
-### Purpose
-Retrieve bookings, optionally filtered by `serviceId` or `status`.
+Returns customer bookings.
 
-### Request Parameters
-- **Query Parameters:**
-  - `serviceId` (string, optional): Filter bookings belonging to a specific service.
-  - `status` (string, optional): Filter by status (`confirmed`, `cancelled`, `completed`).
+### Optional Query Parameters
 
-### Response Body
-Status: `200 OK`
+| Parameter   | Type   | Description              |
+| ----------- | ------ | ------------------------ |
+| `serviceId` | string | Filter by service        |
+| `status`    | string | Filter by booking status |
+
+Supported statuses:
+
+```text
+confirmed
+cancelled
+completed
+```
+
+### Response
+
 ```json
 {
   "data": [
@@ -507,7 +542,10 @@ Status: `200 OK`
       "bookingNumber": "CSB-2026-0101",
       "serviceId": "service-001",
       "serviceName": "Home Deep Cleaning",
-      "provider": { "id": "prov-01", "name": "CleanCare Services" },
+      "provider": {
+        "id": "prov-01",
+        "name": "CleanCare Services"
+      },
       "customerName": "Aarav Sharma",
       "customerEmail": "aarav@example.com",
       "customerPhone": "9841000001",
@@ -521,81 +559,45 @@ Status: `200 OK`
       "createdAt": "2026-08-30T10:00:00Z"
     }
   ],
-  "meta": { "total": 1 }
-}
-```
-
-### HTTP Status Codes
-- `200 OK`: Request succeeded.
-- `500 Internal Server Error`: Unexpected server error.
-
-### UI Behavior
-- **Loading:** Display skeleton list items.
-- **Empty:** Display friendly empty notice ("No bookings yet for this service") with access to the Book button.
-- **Error:** Render error notification banner with retry capability.
-
----
-
-## 9. Get Booking Details
-
-### HTTP Method & Path
-`GET /api/v1/bookings/{booking_id}`
-
-### Purpose
-Retrieve full details for a specific booking by ID.
-
-### Request Parameters
-- **Path Parameters:**
-  - `booking_id` (string, required): Unique booking ID.
-
-### Response Body
-Status: `200 OK`
-```json
-{
-  "data": {
-    "id": "booking-101",
-    "bookingNumber": "CSB-2026-0101",
-    "serviceId": "service-001",
-    "serviceName": "Home Deep Cleaning",
-    "customerName": "Aarav Sharma",
-    "customerEmail": "aarav@example.com",
-    "customerPhone": "9841000001",
-    "scheduledDate": "2026-09-02",
-    "startTime": "09:00",
-    "endTime": "11:00",
-    "price": 2500,
-    "currency": "NPR",
-    "status": "confirmed",
-    "notes": "Special instructions: Clean balcony windows.",
-    "createdAt": "2026-08-30T10:00:00Z"
+  "meta": {
+    "total": 1
   }
 }
 ```
 
-### HTTP Status Codes
-- `200 OK`: Booking found.
-- `404 Not Found`: Booking ID not found.
-- `500 Internal Server Error`: Server error.
+### Status Codes
 
-### UI Behavior
-- **Loading:** Display loading indicator inside the modal/drawer.
-- **Error:** Display error state banner with a retry action.
+* `200 OK`
+* `500 Internal Server Error`
+
+---
+
+## 9. Get Booking
+
+```http
+GET /bookings/:bookingId
+```
+
+Returns one booking by ID.
+
+### Status Codes
+
+* `200 OK`
+* `404 Not Found`
+* `500 Internal Server Error`
 
 ---
 
 ## 10. Update / Reschedule Booking
 
-### HTTP Method & Path
-`PATCH /api/v1/bookings/{booking_id}`
+```http
+PATCH /bookings/:bookingId
+```
 
-### Purpose
-Update customer details, scheduled date, time slot, status, or notes of an existing booking.
+Updates booking information or changes the selected date/time.
 
-### Request Parameters
-- **Path Parameters:**
-  - `booking_id` (string, required): Unique booking ID.
+### Example Request
 
-### Request Body
 ```json
 {
   "customerName": "Aarav Sharma",
@@ -607,65 +609,85 @@ Update customer details, scheduled date, time slot, status, or notes of an exist
 }
 ```
 
-### Response Body
-Status: `200 OK`
+Only fields that need to change are required in a PATCH request.
+
+### Slot Conflict
+
+If the new time slot is unavailable:
+
+```text
+409 Conflict
+```
+
 ```json
 {
-  "data": {
-    "id": "booking-101",
-    "bookingNumber": "CSB-2026-0101",
-    "serviceId": "service-001",
-    "serviceName": "Home Deep Cleaning",
-    "customerName": "Aarav Sharma",
-    "customerEmail": "aarav@example.com",
-    "customerPhone": "9841000001",
-    "scheduledDate": "2026-09-04",
-    "startTime": "10:30",
-    "endTime": "12:30",
-    "price": 2500,
-    "currency": "NPR",
-    "status": "confirmed",
-    "notes": "Rescheduled due to travel.",
-    "createdAt": "2026-08-30T10:00:00Z",
-    "updatedAt": "2026-09-01T14:30:00Z"
+  "error": {
+    "code": "SLOT_UNAVAILABLE",
+    "message": "The selected time slot is no longer available."
   }
 }
 ```
 
-### HTTP Status Codes
-- `200 OK`: Booking updated successfully.
-- `400 Bad Request`: Validation failure.
-- `404 Not Found`: Booking not found.
-- `409 Conflict`: New time slot is unavailable.
-- `500 Internal Server Error`: Server error.
+### Status Codes
 
-### UI Behavior
-- **Loading:** Disable modal form buttons and show spinner.
-- **Validation / Conflict Errors (400 / 409):** Keep modal open with user input intact and display inline error banner.
-- **Success:** Close modal, show success toast, invalidate queries (`['bookings']`, `['availability']`).
+* `200 OK`
+* `400 Bad Request`
+* `404 Not Found`
+* `409 Conflict`
+* `500 Internal Server Error`
 
 ---
 
-## 11. Cancel / Delete Booking
+## 11. Delete Booking
 
-### HTTP Method & Path
-`DELETE /api/v1/bookings/{booking_id}`
+```http
+DELETE /bookings/:bookingId
+```
 
-### Purpose
-Cancel or permanently remove a booking.
+Deletes or cancels an existing booking.
 
-### Request Parameters
-- **Path Parameters:**
-  - `booking_id` (string, required): Unique booking ID.
+### Success
 
-### Response Body
-Status: `204 No Content` (empty body).
+```text
+204 No Content
+```
 
-### HTTP Status Codes
-- `204 No Content`: Booking deleted.
-- `404 Not Found`: Booking not found.
-- `500 Internal Server Error`: Unexpected server error.
+### Status Codes
 
-### UI Behavior
-- **Loading:** Show spinner on confirmation dialog action button.
-- **Success:** Close dialog, present success toast, and invalidate `['bookings']`, `['availability']`, and `['services']` queries to restore slot availability and active booking count.
+* `204 No Content`
+* `404 Not Found`
+* `500 Internal Server Error`
+
+---
+
+# Frontend Integration
+
+The frontend does not call API endpoints directly from presentational components.
+
+The communication flow is:
+
+```text
+Page / Component
+      ↓
+Feature Hook
+      ↓
+TanStack React Query
+      ↓
+Feature API Function
+      ↓
+API Client
+      ↓
+Mock API
+```
+
+TanStack React Query manages:
+
+* fetching
+* loading state
+* error state
+* caching
+* mutations
+* refetching
+* query invalidation
+
+
