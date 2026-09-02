@@ -1115,7 +1115,9 @@ input, select, textarea {
   color: var(--rose-500);
 }
 
-.form-input, .form-select, .form-textarea {
+.form-input,
+.form-select,
+.form-textarea {
   background: var(--bg-app);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
@@ -1125,7 +1127,21 @@ input, select, textarea {
   transition: var(--transition-fast);
 }
 
-.form-input:focus, .form-select:focus, .form-textarea:focus {
+/* Keep browser autofill consistent with dark theme */
+.form-input:-webkit-autofill,
+.form-input:-webkit-autofill:hover,
+.form-input:-webkit-autofill:focus,
+.form-input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text-main);
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-app) inset;
+  box-shadow: 0 0 0 1000px var(--bg-app) inset;
+  caret-color: var(--text-main);
+  transition: background-color 9999s ease-out 0s;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
   outline: none;
   border-color: var(--primary-500);
   box-shadow: 0 0 0 3px var(--primary-glow);
