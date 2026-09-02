@@ -45,7 +45,9 @@ export function ServiceDetailPage() {
   const [isServiceDeleteOpen, setIsServiceDeleteOpen] = useState(false);
 
   const service = serviceQuery.data?.data;
-  const isLoading = serviceQuery.isLoading || serviceQuery.isFetching;
+  // Keep the rendered page and any open modal mounted during background refetches.
+  // A full-page skeleton is only appropriate before the first service response.
+  const isLoading = serviceQuery.isLoading;
   const serviceError = serviceQuery.error instanceof ApiError ? serviceQuery.error : null;
   const updateServiceError =
     updateServiceMutation.error instanceof ApiError ? updateServiceMutation.error : null;

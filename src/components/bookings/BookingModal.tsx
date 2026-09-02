@@ -27,6 +27,7 @@ import {
 import { Button } from '../common/Button';
 import { ButtonGroup } from '../common/ButtonGroup';
 import { getLocalDateString } from '../../utils/date';
+import { BookingConfirmationView } from './BookingConfirmationView';
 
 type BookingModalProps = {
   isOpen: boolean;
@@ -51,6 +52,8 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
   const [status, setStatus] = useState<'confirmed' | 'cancelled' | 'completed'>('confirmed');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [step, setStep] = useState<'form' | 'submitting' | 'confirmed'>('form');
+  const [createdBooking, setCreatedBooking] = useState<Booking | null>(null);
 
   // Availability Query
   const targetServiceId = service?.id || booking?.serviceId || '';
@@ -64,7 +67,7 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
   const createMutation = useCreateBookingMutation();
   const updateMutation = useUpdateBookingMutation();
   const activeMutation = isEditMode ? updateMutation : createMutation;
-  const isSubmitting = activeMutation.isPending;
+  const isSubmitting = step === 'submitting' || activeMutation.isPending;
 
   const handleClose = () => {
     if (!isSubmitting) onClose();
@@ -75,6 +78,8 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
     if (isOpen) {
       setFieldErrors({});
       setFormError(null);
+      setStep('form');
+      setCreatedBooking(null);
       if (booking) {
         setSelectedDate(booking.scheduledDate);
         setSelectedSlot(booking.startTime);
@@ -151,6 +156,7 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
       return;
     }
 
+    setStep('submitting');
     try {
       if (isEditMode && booking) {
         const dto: UpdateBookingDto = {
@@ -176,12 +182,13 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
           notes: notes.trim() || undefined,
         };
         const response = await createMutation.mutateAsync(dto);
-        onClose();
-        navigate(`/bookings/confirmation/${response.data.id}`);
+        setCreatedBooking(response.data);
+        setStep('confirmed');
         return;
       }
       onClose();
     } catch (err: unknown) {
+      setStep('form');
       if (err instanceof ApiError) {
         if (err.statusCode === 400 && err.fieldErrors) {
           setFieldErrors(err.fieldErrors);
@@ -205,7 +212,7 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
         <div className="modal-header">
           <div className="modal-title">
             <Calendar size={20} className="text-primary" />
-            <span>{isEditMode ? `Edit Booking #${booking?.bookingNumber}` : `Book ${displayService.name}`}</span>
+            <span>{step === 'confirmed' ? 'Booking confirmed' : isEditMode ? `Edit Booking #${booking?.bookingNumber}` : `Book ${displayService.name}`}</span>
           </div>
           <button
             type="button"
@@ -219,6 +226,13 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
         </div>
 
         <div className="modal-body-padded">
+          {step === 'confirmed' && createdBooking ? (
+            <BookingConfirmationView
+              booking={createdBooking}
+              onBrowseServices={handleClose}
+              onViewBookings={() => { onClose(); navigate('/bookings'); }}
+            />
+          ) : (<>
           {/* Service Banner */}
           <div className="availability-service-summary">
             <div className="flex-between align-center">
@@ -240,7 +254,7 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="booking-modal-form">
+          <form onSubmit={handleSubmit} className={`booking-modal-form ${isSubmitting ? 'booking-form-submitting' : ''}`} aria-disabled={isSubmitting}>
             {/* Step 1: Date & Time Selection */}
             <div className="form-section">
               <div className="section-label">
@@ -508,6 +522,7 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
               </Button>
             </ButtonGroup>
           </form>
+          </>)}
         </div>
       </div>
     </div>
