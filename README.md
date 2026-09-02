@@ -1,75 +1,124 @@
-# React + TypeScript + Vite
+# Customer Service Booking System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A small production-style React application for browsing services, checking availability, creating bookings, and managing existing bookings.
 
-Currently, two official plugins are available:
+The project focuses on frontend architecture, API-first development, reusable components, state handling, testing, and maintainability.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- Browse and filter services
+- View service details and available booking slots
+- Create a booking and view its confirmation
+- View customer bookings and their associated services
+- Create, edit, and delete services
+- Loading, empty, error, and validation states
+- Booking slot conflict handling
+- Browser-based mock API integration
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- React
+- TypeScript
+- Vite
+- React Router
+- TanStack React Query
+- Jest
+- React Testing Library
+- Lucide React
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Getting Started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Install dependencies:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Start the application:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm run dev
 ```
+
+The mock API runs in the browser, so no separate API server is required.
+
+Run tests:
+
+```bash
+npm test
+```
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+See [docs/setup.md](docs/setup.md) for prerequisites, environment configuration, mock API details, and additional test commands.
+
+## Project Structure
+
+The project follows a feature-first architecture:
+
+```text
+src/
+|-- api/
+|   |-- client/
+|   |-- mock/
+|   `-- services/
+|-- components/
+|   |-- common/
+|   `-- layout/
+|-- features/
+|   |-- bookings/
+|   `-- services/
+|-- layouts/
+|-- routes/
+|-- test-utils/
+|-- types/
+`-- utils/
+```
+
+Feature-specific components, hooks, and pages live in their respective feature folders. Shared UI components remain in `components/`.
+
+See [docs/architecture.md](docs/architecture.md) for the complete architecture explanation.
+
+## Documentation
+
+Detailed documentation is available in the `docs/` directory:
+
+- [Architecture](docs/architecture.md) — application structure and responsibilities
+- [Technical decisions](docs/decisions.md) — key decisions and alternatives considered
+- [API contract](docs/api-contract.md) — frontend API contract and endpoint definitions
+- [Setup](docs/setup.md) — installation, environment setup, mock API, and tests
+
+## Testing
+
+Automated tests cover important service and booking flows, including list and detail rendering, booking interactions, validation, conflicts, and loading and error states.
+
+```bash
+npm test
+```
+
+## Architecture Summary
+
+```text
+Route Page
+    |
+    v
+Feature Components
+    |
+    v
+Feature Hooks
+    |
+    v
+TanStack React Query
+    |
+    v
+API Layer
+    |
+    v
+Browser Mock API
+```
+
+This separation keeps the UI, data fetching, routing, and business functionality easier to understand, test, and maintain.
