@@ -2115,6 +2115,12 @@ input, select, textarea {
 .summary-total { margin-top: .25rem; font-size: 1.08rem; }
 .summary-total > strong { color: var(--color-primary-light); }
 .booking-confirmation-view { padding: 1rem 0; }
+.booking-confirmation-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
 .booking-confirmation-page { max-width: 720px; margin: 0 auto; padding: 3rem 0; }
 .confirmation-card { max-width: 640px; margin-left: auto; margin-right: auto; }
 .booking-action-hint { display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem; border-radius: var(--radius-sm); color: var(--color-warning); background: var(--color-warning-bg); border: 1px solid rgba(251, 191, 36, .25); }
