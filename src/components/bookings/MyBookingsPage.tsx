@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Building2, Calendar, Clock, Eye, MapPin, RefreshCw, Search } from 'lucide-react';
 import type { Booking } from '../../types';
 import { useServiceBookings } from '../../features/bookings/hooks/useBookings';
@@ -7,6 +7,7 @@ import { BookingDetailModal } from './BookingDetailModal';
 import { Button } from '../common/Button';
 
 export function MyBookingsPage() {
+  const navigate = useNavigate();
   const [status, setStatus] = useState('all');
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -21,11 +22,22 @@ export function MyBookingsPage() {
     <div className="my-bookings-page">
       <div className="bookings-header flex-between align-center">
         <div><h1>My Bookings</h1><p className="text-muted mt-1">View your appointments and full booking details.</p></div>
-        <Link to="/" className="btn-primary">Book another service</Link>
+        <Button variant="primary" onClick={() => navigate('/')}>Book another service</Button>
       </div>
       <div className="bookings-toolbar flex-between align-center mt-4">
         <div className="status-tabs flex-align">
-          {['all', 'confirmed', 'completed', 'cancelled'].map((item) => <button key={item} type="button" className={`tab-btn ${status === item ? 'active' : ''}`} onClick={() => setStatus(item)}>{item[0].toUpperCase() + item.slice(1)}</button>)}
+          {['all', 'confirmed', 'completed', 'cancelled'].map((item) => (
+            <Button
+              key={item}
+              size="sm"
+              variant={status === item ? 'primary' : 'ghost'}
+              className="booking-filter-button"
+              aria-pressed={status === item}
+              onClick={() => setStatus(item)}
+            >
+              {item[0].toUpperCase() + item.slice(1)}
+            </Button>
+          ))}
         </div>
         <div className="search-input-wrapper"><Search size={15} className="search-icon" /><input className="search-input" placeholder="Search booking, service or provider" value={search} onChange={(event) => setSearch(event.target.value)} /></div>
       </div>
@@ -48,6 +60,6 @@ function BookingCard({ booking, onView }: { booking: Booking; onView: () => void
       <div className="booking-meta-row flex-align mt-2 text-sm"><Calendar size={14} className="text-secondary mr-2" /><strong>{booking.scheduledDate}</strong><Clock size={14} className="text-secondary ml-3 mr-1" />{booking.startTime}–{booking.endTime}</div>
       <div className="booking-meta-row flex-align mt-2 text-sm text-muted"><MapPin size={14} className="mr-2" />{booking.serviceAddress}</div>
     </div>
-    <div className="booking-card-footer flex-between align-center mt-4 pt-3 border-t border-color"><strong className="text-primary">{booking.currency} {booking.price.toLocaleString()}</strong><button type="button" className="btn-secondary-sm flex-align" onClick={onView}><Eye size={15} className="mr-1" />Booking details</button></div>
+    <div className="booking-card-footer flex-between align-center mt-4 pt-3 border-t border-color"><strong className="text-primary">{booking.currency} {booking.price.toLocaleString()}</strong><Button size="sm" variant="secondary" leftIcon={<Eye size={15} />} onClick={onView}>Booking details</Button></div>
   </article>;
 }
