@@ -26,6 +26,7 @@ import { BookingDetailModal } from '../bookings/BookingDetailModal';
 import { ServiceFormModal } from './ServiceFormModal';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { ApiError } from '../../types';
+import { TodayAvailabilityPill } from './TodayAvailabilityPill';
 
 export function ServiceDetailPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
@@ -219,6 +220,8 @@ export function ServiceDetailPage() {
                 <Users size={15} className="text-secondary mr-1" />
                 <span>Active Bookings: <strong>{service.activeBookingsCount || 0}</strong></span>
               </div>
+
+              <TodayAvailabilityPill serviceId={service.id} onClick={handleOpenNewBooking} />
             </div>
 
             <div className="hero-cta-row mt-6 pt-4 border-t border-color flex-between align-center">
