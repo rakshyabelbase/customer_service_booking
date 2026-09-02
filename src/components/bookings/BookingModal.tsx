@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { Service, Booking, CreateBookingDto, UpdateBookingDto } from '../../types';
 import { ApiError } from '../../types';
 import { useAvailabilityQuery } from '../../features/services/hooks/useAvailability';
@@ -36,6 +36,7 @@ type BookingModalProps = {
 };
 
 export function BookingModal({ isOpen, service, booking, onClose }: BookingModalProps) {
+  const navigate = useNavigate();
   const isEditMode = Boolean(booking);
 
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -50,7 +51,6 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
   const [status, setStatus] = useState<'confirmed' | 'cancelled' | 'completed'>('confirmed');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
 
   // Availability Query
   const targetServiceId = service?.id || booking?.serviceId || '';
@@ -64,13 +64,17 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
   const createMutation = useCreateBookingMutation();
   const updateMutation = useUpdateBookingMutation();
   const activeMutation = isEditMode ? updateMutation : createMutation;
+  const isSubmitting = activeMutation.isPending;
+
+  const handleClose = () => {
+    if (!isSubmitting) onClose();
+  };
 
   // Initialize or reset state when modal opens or booking changes
   useEffect(() => {
     if (isOpen) {
       setFieldErrors({});
       setFormError(null);
-      setConfirmedBooking(null);
       if (booking) {
         setSelectedDate(booking.scheduledDate);
         setSelectedSlot(booking.startTime);
@@ -85,8 +89,8 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
         setSelectedSlot(null);
         setCustomerName('Aarav Sharma');
         setCustomerEmail('aarav@example.com');
-        setCustomerPhone('9841000001');
-        setServiceAddress('Lazimpat Road, Kathmandu 44600');
+        setCustomerPhone('');
+        setServiceAddress('');
         setNotes('');
         setStatus('confirmed');
       }
@@ -172,7 +176,8 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
           notes: notes.trim() || undefined,
         };
         const response = await createMutation.mutateAsync(dto);
-        setConfirmedBooking(response.data);
+        onClose();
+        navigate(`/bookings/confirmation/${response.data.id}`);
         return;
       }
       onClose();
@@ -195,17 +200,18 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
+    <div className="modal-backdrop" onClick={handleClose} role="dialog" aria-modal="true" aria-busy={isSubmitting}>
       <div className="modal-container modal-medium" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title">
             <Calendar size={20} className="text-primary" />
-            <span>{confirmedBooking ? 'Booking confirmed' : isEditMode ? `Edit Booking #${booking?.bookingNumber}` : `Book ${displayService.name}`}</span>
+            <span>{isEditMode ? `Edit Booking #${booking?.bookingNumber}` : `Book ${displayService.name}`}</span>
           </div>
           <button
             type="button"
             className="modal-close-btn"
-            onClick={onClose}
+            onClick={handleClose}
+            disabled={isSubmitting}
             aria-label="Close modal"
           >
             <X size={18} />
@@ -213,26 +219,6 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
         </div>
 
         <div className="modal-body-padded">
-          {confirmedBooking ? (
-            <div className="booking-confirmation-view text-center">
-              <CheckCircle2 size={52} className="text-success mx-auto" />
-              <h2 className="mt-3">Your booking is confirmed</h2>
-              <p className="text-muted mt-1">Keep this booking number for your records.</p>
-              <div className="booking-summary-card mt-4 text-left">
-                <div className="summary-row"><span>Booking number</span><strong>{confirmedBooking.bookingNumber}</strong></div>
-                <div className="summary-row"><span>Service</span><strong>{confirmedBooking.serviceName}</strong></div>
-                <div className="summary-row"><span>Provider</span><strong>{confirmedBooking.provider.name}</strong></div>
-                <div className="summary-row"><span>Date & time</span><strong>{confirmedBooking.scheduledDate}, {confirmedBooking.startTime}–{confirmedBooking.endTime}</strong></div>
-                <div className="summary-row"><span>Customer</span><strong>{confirmedBooking.customerName}</strong></div>
-                <div className="summary-row"><span>Address</span><strong>{confirmedBooking.serviceAddress}</strong></div>
-                <div className="summary-row summary-total"><span>Total</span><strong>{confirmedBooking.currency} {confirmedBooking.price.toLocaleString()}</strong></div>
-              </div>
-              <ButtonGroup align="right" className="mt-4">
-                <Button variant="secondary" onClick={onClose}>Close</Button>
-                <Link to="/bookings" className="btn-primary" onClick={onClose}>View My Bookings</Link>
-              </ButtonGroup>
-            </div>
-          ) : (<>
           {/* Service Banner */}
           <div className="availability-service-summary">
             <div className="flex-between align-center">
@@ -504,23 +490,24 @@ export function BookingModal({ isOpen, service, booking, onClose }: BookingModal
               <Button
                 type="button"
                 variant="secondary"
-                onClick={onClose}
-                disabled={activeMutation.isPending}
+                onClick={handleClose}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="primary"
-                isLoading={activeMutation.isPending}
+                isLoading={isSubmitting}
                 disabled={!selectedSlot}
                 leftIcon={<CheckCircle2 size={16} />}
               >
-                {isEditMode ? 'Save Booking Changes' : 'Confirm Booking'}
+                {isSubmitting
+                  ? isEditMode ? 'Saving...' : 'Confirming...'
+                  : isEditMode ? 'Save Booking Changes' : 'Confirm Booking'}
               </Button>
             </ButtonGroup>
           </form>
-          </>)}
         </div>
       </div>
     </div>
