@@ -7,6 +7,7 @@ import { DevToolbar } from './components/common/DevToolbar';
 import { useState } from 'react';
 import { Navbar } from './components/layout/Navbar';
 import { MyBookingsPage } from './components/bookings/MyBookingsPage';
+import { BookingConfirmationPage } from './components/bookings/BookingConfirmationPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +38,7 @@ function MainLayout() {
           <Route path="/" element={<ServiceList />} />
           <Route path="/services/:serviceId" element={<ServiceDetailPage />} />
           <Route path="/bookings" element={<MyBookingsPage />} />
+          <Route path="/bookings/confirmation/:bookingId" element={<BookingConfirmationPage />} />
           <Route path="*" element={<ServiceList />} />
         </Routes>
       </main>
